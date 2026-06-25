@@ -40,6 +40,7 @@ const menuTree: TreeCategory[] = [
     items: [
       { label: "Text", href: "/tools/base64" },
       { label: "Image", href: "/tools/base64/image" },
+      { label: "PDF", href: "/tools/base64/pdf" },
     ],
   },
 ];
