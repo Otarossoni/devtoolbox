@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   LockKeyIcon,
   LockKeyOpenIcon,
@@ -12,6 +12,20 @@ import {
 
 type Mode = "encode" | "decode";
 
+function base64ToBlobUrl(base64: string): string {
+  const dataUrl = base64.startsWith("data:")
+    ? base64
+    : `data:application/pdf;base64,${base64}`;
+  const base64Data = dataUrl.split(",")[1] || "";
+  const binary = atob(base64Data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  return URL.createObjectURL(blob);
+}
+
 export default function Base64PdfPage() {
   const [mode, setMode] = useState<Mode>("encode");
   const [base64, setBase64] = useState("");
@@ -21,21 +35,38 @@ export default function Base64PdfPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const blobUrlRef = useRef("");
+
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+    };
+  }, []);
+
+  const revokeBlob = useCallback(() => {
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = "";
+    }
+  }, []);
 
   // ---- Encode: file upload ----
 
   const processFile = useCallback((file: File) => {
     setFileName(file.name);
     setError(false);
+    revokeBlob();
 
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
       setBase64(dataUrl);
-      setPdfSrc(dataUrl);
+      const url = base64ToBlobUrl(dataUrl);
+      blobUrlRef.current = url;
+      setPdfSrc(url);
     };
     reader.readAsDataURL(file);
-  }, []);
+  }, [revokeBlob]);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,6 +103,7 @@ export default function Base64PdfPage() {
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
       setBase64(value);
+      revokeBlob();
 
       const trimmed = value.trim();
       if (!trimmed) {
@@ -80,21 +112,17 @@ export default function Base64PdfPage() {
         return;
       }
 
-      const src = trimmed.startsWith("data:application/pdf")
-        ? trimmed
-        : `data:application/pdf;base64,${trimmed}`;
-
       try {
-        const base64Data = src.split(",")[1] || "";
-        atob(base64Data);
-        setPdfSrc(src);
+        const url = base64ToBlobUrl(trimmed);
+        blobUrlRef.current = url;
+        setPdfSrc(url);
         setError(false);
       } catch {
         setPdfSrc("");
         setError(true);
       }
     },
-    [],
+    [revokeBlob],
   );
 
   // ---- Common ----
@@ -106,7 +134,8 @@ export default function Base64PdfPage() {
     setError(false);
     setCopied(false);
     setFileName("");
-  }, []);
+    revokeBlob();
+  }, [revokeBlob]);
 
   const handleCopy = useCallback(async () => {
     if (!base64) return;
