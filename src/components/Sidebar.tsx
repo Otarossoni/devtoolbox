@@ -8,6 +8,7 @@ import {
   ListIcon,
   XIcon,
   FingerprintSimpleIcon,
+  ArrowsLeftRightIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -31,6 +32,14 @@ const menuTree: TreeCategory[] = [
     items: [
       { label: "Generator", href: "/tools/uuid/generator" },
       { label: "Validator", href: "/tools/uuid/validator" },
+    ],
+  },
+  {
+    label: "Base64",
+    icon: ArrowsLeftRightIcon,
+    items: [
+      { label: "Text", href: "/tools/base64" },
+      { label: "Image", href: "/tools/base64/image" },
     ],
   },
 ];

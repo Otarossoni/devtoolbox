@@ -1,15 +1,22 @@
 import Link from "next/link";
 import {
   FingerprintSimpleIcon,
+  ArrowsLeftRightIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
 const tools = [
   {
     title: "UUID",
-    description: "Universal unique identifier generator",
+    description: "Universal unique identifier generator and validator",
     icon: FingerprintSimpleIcon,
     href: "/tools/uuid/generator",
+  },
+  {
+    title: "Base64",
+    description: "Encode and decode text, files, and more in Base64 format",
+    icon: ArrowsLeftRightIcon,
+    href: "/tools/base64",
   },
 ];
 
@@ -26,7 +33,7 @@ export default function Home() {
         </div>
 
         {/* Tools grid */}
-        <div className="animate-7 grid grid-cols-1 gap-4">
+        <div className="animate-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {tools.map((tool) => (
             <Link
               key={tool.title}

@@ -23,14 +23,22 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 
 ### UUID
 
-**Generator** — Generate UUIDs across six versions: v1 (timestamp + MAC), v3 (MD5 + namespace), v4 (random), v5 (SHA-1 + namespace), v6 (reordered timestamp), and v7 (Unix timestamp). Supports deterministic generation for v3 and v5.
+**Generator** — Generate UUIDs across six versions: v1 (timestamp + MAC), v3 (MD5 + namespace), v4 (random), v5 (SHA-1 + namespace), v6 (reordered timestamp), and v7 (Unix timestamp). Supports deterministic generation for v3 and v5 with namespace selection and custom name input.
 
 **Validator** — Paste any UUID to instantly check validity and identify its version. Real-time feedback as you type.
+
+### Base64
+
+**Text** — Encode and decode text strings to/from Base64 in real time. UTF-8 safe, handles Unicode and emoji.
+
+**Image** — Encode images to Base64 (drag & drop or file picker) and decode Base64 strings back to images with preview and download. Lossless — the decoded file is binary-identical to the original.
 
 ## Features
 
 - 🔑 **UUID Generator**: v1, v3, v4, v5, v6, v7 with deterministic support for v3/v5
 - 🔍 **UUID Validator**: Real-time version detection and validation
+- 🔄 **Base64 Text**: Encode and decode with UTF-8 and whitespace support
+- 🖼 **Base64 Image**: Lossless image encode/decode with drag & drop and preview
 
 ## Stack
 
