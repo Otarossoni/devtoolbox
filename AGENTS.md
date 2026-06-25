@@ -15,6 +15,10 @@ npm run lint      # ESLint
 npm run typecheck # TypeScript
 ```
 
+## Git policy
+- **Nunca commitar sem solicitação explícita e aprovação do usuário.**
+- Só fazer commit, push ou qualquer operação git que altere o repositório remoto quando o usuário pedir explicitamente.
+
 ## Project conventions
 
 ### File structure
