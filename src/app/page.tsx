@@ -21,7 +21,7 @@ const tools = [
   },
   {
     title: "Text",
-    description: "Manipulate, convert, and compare text",
+    description: "Case conversion, character counting, text diffing, and more",
     icon: TextAaIcon,
     href: "/tools/text/case",
   },
@@ -49,8 +49,8 @@ export default function Home() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg border bg-[#8A2BE2]/10 border-[#8A2BE2]/20">
-                    <tool.icon className="h-4.5 w-4.5 text-[#8A2BE2]" />
+                  <div className="flex items-center justify-center shrink-0 w-9 h-9 rounded-lg border bg-[#8A2BE2]/10 border-[#8A2BE2]/20">
+                    <tool.icon className="h-5 w-5 text-[#8A2BE2]" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-[#ededed]">
