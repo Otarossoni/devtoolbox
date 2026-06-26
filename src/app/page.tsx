@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   FingerprintSimpleIcon,
   ArrowsLeftRightIcon,
+  TextAaIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -17,6 +18,12 @@ const tools = [
     description: "Encode and decode text, files, and more in Base64 format",
     icon: ArrowsLeftRightIcon,
     href: "/tools/base64",
+  },
+  {
+    title: "Text",
+    description: "Manipulate, convert, and compare text",
+    icon: TextAaIcon,
+    href: "/tools/text/case",
   },
 ];
 

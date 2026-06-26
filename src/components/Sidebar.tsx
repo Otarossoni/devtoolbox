@@ -9,6 +9,7 @@ import {
   XIcon,
   FingerprintSimpleIcon,
   ArrowsLeftRightIcon,
+  TextAaIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -41,6 +42,17 @@ const menuTree: TreeCategory[] = [
       { label: "Text", href: "/tools/base64" },
       { label: "Image", href: "/tools/base64/image" },
       { label: "PDF", href: "/tools/base64/pdf" },
+    ],
+  },
+  {
+    label: "Text",
+    icon: TextAaIcon,
+    items: [
+      { label: "Case", href: "/tools/text/case" },
+      { label: "Counter", href: "/tools/text/counter" },
+      { label: "Diff", href: "/tools/text/diff" },
+      { label: "Lorem", href: "/tools/text/lorem" },
+      { label: "Replacer", href: "/tools/text/replacer" },
     ],
   },
 ];
