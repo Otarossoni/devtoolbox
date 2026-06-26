@@ -44,9 +44,11 @@ const menuTree: TreeCategory[] = [
     label: "JSON",
     icon: BracketsCurlyIcon,
     items: [
-      { label: "Formatter", href: "/tools/json/formatter" },
+      { label: "Formatter & Validator", href: "/tools/json/formatter" },
       { label: "CSV Converter", href: "/tools/json/converter" },
       { label: "YAML Converter", href: "/tools/json/yaml" },
+      { label: "XML Converter", href: "/tools/json/xml" },
+      { label: "Query String", href: "/tools/json/querystring" },
       { label: "Diff", href: "/tools/json/diff" },
       { label: "Path", href: "/tools/json/path" },
     ],

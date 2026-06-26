@@ -292,3 +292,224 @@ function resolveSegment(current: unknown, seg: PathSegment): unknown {
   }
   throw new Error("Invalid segment");
 }
+
+// ---- JSON ↔ XML ----
+
+function escapeXML(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function valueToXML(value: unknown, tag: string, indent: number, depth: number): string {
+  const pad = " ".repeat(depth * indent);
+
+  if (value === null || value === undefined) {
+    return `${pad}<${tag} />`;
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) return `${pad}<${tag}></${tag}>`;
+    return value.map((v) => valueToXML(v, tag, indent, depth)).join("\n");
+  }
+
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    const attrs: string[] = [];
+    const children: string[] = [];
+    const textParts: string[] = [];
+
+    for (const [k, v] of Object.entries(obj)) {
+      if (k.startsWith("@")) {
+        attrs.push(`${k.slice(1)}="${escapeXML(String(v))}"`);
+      } else if (k === "#text") {
+        textParts.push(String(v));
+      } else {
+        children.push(valueToXML(v, k, indent, depth + 1));
+      }
+    }
+
+    const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+
+    if (children.length === 0 && textParts.length === 0) {
+      return `${pad}<${tag}${attrStr}>${textParts.join("")}</${tag}>`;
+    }
+
+    if (children.length === 0) {
+      return `${pad}<${tag}${attrStr}>${escapeXML(textParts.join(""))}</${tag}>`;
+    }
+
+    return [
+      `${pad}<${tag}${attrStr}>`,
+      ...children,
+      ...textParts.map((t) => pad + "  " + escapeXML(t)),
+      `${pad}</${tag}>`,
+    ].join("\n");
+  }
+
+  if (typeof value === "string") {
+    return `${pad}<${tag}>${escapeXML(value)}</${tag}>`;
+  }
+
+  return `${pad}<${tag}>${value}</${tag}>`;
+}
+
+export function jsonToXML(input: string): { result: string; error: string | null } {
+  try {
+    const parsed = JSON.parse(input);
+    if (typeof parsed !== "object" || parsed === null) {
+      return { result: "", error: "JSON root must be an object or array" };
+    }
+
+    let xml: string;
+    if (Array.isArray(parsed)) {
+      const items = parsed.map((v) => valueToXML(v, "item", 2, 1)).join("\n");
+      xml = `<?xml version="1.0" encoding="UTF-8"?>\n<root>\n${items}\n</root>\n`;
+    } else {
+      const obj = Object.keys(parsed).length !== 1 ? { root: parsed } : parsed;
+      const rootTag = Object.keys(obj)[0];
+      xml = `<?xml version="1.0" encoding="UTF-8"?>\n${valueToXML(obj[rootTag], rootTag, 2, 0)}\n`;
+    }
+
+    return { result: xml, error: null };
+  } catch (e) {
+    return { result: "", error: (e as Error).message };
+  }
+}
+
+export function xmlToJSON(input: string): { result: string; error: string | null } {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(input, "text/xml");
+    const errorNode = doc.querySelector("parsererror");
+    if (errorNode) {
+      return { result: "", error: errorNode.textContent || "XML parsing error" };
+    }
+    const json = elementToJSON(doc.documentElement!);
+    return { result: JSON.stringify({ [nodeName(doc.documentElement!)]: json }, null, 2), error: null };
+  } catch (e) {
+    return { result: "", error: (e as Error).message };
+  }
+}
+
+function nodeName(el: Element): string {
+  return el.tagName;
+}
+
+function elementToJSON(el: Element): unknown {
+  const result: Record<string, unknown> = {};
+  const childElements: Element[] = Array.from(el.children);
+
+  for (const attr of Array.from(el.attributes)) {
+    result[`@${attr.name}`] = attr.value;
+  }
+
+  const textChildren = Array.from(el.childNodes).filter(
+    (n) => n.nodeType === 3 && n.textContent!.trim(),
+  );
+
+  if (childElements.length === 0) {
+    const text = el.textContent?.trim() || "";
+    if (Object.keys(result).length > 0) {
+      result["#text"] = text;
+      return result;
+    }
+    return text;
+  }
+
+  const groups = new Map<string, unknown[]>();
+  for (const child of childElements) {
+    const name = nodeName(child);
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name)!.push(elementToJSON(child));
+  }
+
+  for (const textChild of textChildren) {
+    const existing = result["#text"] as string;
+    result["#text"] = existing ? existing + " " + textChild.textContent!.trim() : textChild.textContent!.trim();
+  }
+
+  for (const [name, vals] of groups) {
+    result[name] = vals.length === 1 ? vals[0] : vals;
+  }
+
+  return result;
+}
+
+// ---- JSON ↔ Query String ----
+
+function flattenForQS(
+  obj: Record<string, unknown>,
+  prefix = "",
+): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    const key = prefix ? `${prefix}[${k}]` : k;
+    if (v !== null && v !== undefined && typeof v === "object" && !Array.isArray(v)) {
+      Object.assign(result, flattenForQS(v as Record<string, unknown>, key));
+    } else if (Array.isArray(v)) {
+      for (const item of v) {
+        if (typeof item === "object" && item !== null) {
+          Object.assign(result, flattenForQS(item as Record<string, unknown>, `${key}[]`));
+        } else {
+          result[`${key}[]`] = String(item);
+        }
+      }
+    } else {
+      result[key] = v === null || v === undefined ? "" : String(v);
+    }
+  }
+  return result;
+}
+
+export function jsonToQueryString(input: string): { result: string; error: string | null } {
+  try {
+    const obj = JSON.parse(input);
+    if (typeof obj !== "object" || obj === null || Array.isArray(obj)) {
+      return { result: "", error: "JSON root must be a flat or nested object" };
+    }
+    const flat = flattenForQS(obj);
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(flat)) {
+      params.append(k, v);
+    }
+    return { result: params.toString(), error: null };
+  } catch (e) {
+    return { result: "", error: (e as Error).message };
+  }
+}
+
+function unflattenQS(params: URLSearchParams): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [k, v] of params.entries()) {
+    const keys = k.split(/\[|\]\[?/).filter(Boolean);
+    let current: Record<string, unknown> = result;
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i];
+      if (!(key in current)) current[key] = {};
+      current = current[key] as Record<string, unknown>;
+    }
+    const lastKey = keys[keys.length - 1];
+    if (lastKey in current) {
+      const existing = current[lastKey];
+      current[lastKey] = Array.isArray(existing) ? [...existing, v] : [existing, v];
+    } else {
+      current[lastKey] = v;
+    }
+  }
+  return result;
+}
+
+export function queryStringToJSON(input: string): { result: string; error: string | null } {
+  try {
+    const qs = input.includes("?") ? input.split("?")[1] : input;
+    const params = new URLSearchParams(qs.trim());
+    const obj = unflattenQS(params);
+    return { result: JSON.stringify(obj, null, 2), error: null };
+  } catch (e) {
+    return { result: "", error: (e as Error).message };
+  }
+}

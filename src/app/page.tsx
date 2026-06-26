@@ -35,7 +35,7 @@ const tools = [
   },
   {
     title: "JSON",
-    description: "Format, validate, minify, and convert JSON data",
+    description: "Format, validate, convert, diff, and explore JSON data and related formats",
     icon: BracketsCurlyIcon,
     href: "/tools/json/formatter",
   },
