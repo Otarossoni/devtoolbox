@@ -32,6 +32,7 @@ const menuTree: TreeCategory[] = [
     icon: FingerprintSimpleIcon,
     items: [
       { label: "Generator", href: "/tools/uuid/generator" },
+      { label: "Bulk Generator", href: "/tools/uuid/bulk" },
       { label: "Validator", href: "/tools/uuid/validator" },
       { label: "Inspector", href: "/tools/uuid/inspector" },
     ],
@@ -51,10 +52,10 @@ const menuTree: TreeCategory[] = [
     label: "Text",
     icon: TextAaIcon,
     items: [
-      { label: "Case", href: "/tools/text/case" },
-      { label: "Counter", href: "/tools/text/counter" },
-      { label: "Diff", href: "/tools/text/diff" },
-      { label: "Lorem", href: "/tools/text/lorem" },
+      { label: "Case Switcher", href: "/tools/text/case" },
+      { label: "Char Counter", href: "/tools/text/counter" },
+      { label: "Diff Checker", href: "/tools/text/diff" },
+      { label: "Lorem Ipsum", href: "/tools/text/lorem" },
       { label: "Replacer", href: "/tools/text/replacer" },
     ],
   },
