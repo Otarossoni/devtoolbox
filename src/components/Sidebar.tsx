@@ -43,6 +43,8 @@ const menuTree: TreeCategory[] = [
       { label: "Text", href: "/tools/base64" },
       { label: "Image", href: "/tools/base64/image" },
       { label: "PDF", href: "/tools/base64/pdf" },
+      { label: "File", href: "/tools/base64/file" },
+      { label: "Validator", href: "/tools/base64/validator" },
     ],
   },
   {
