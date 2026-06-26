@@ -11,6 +11,7 @@ import {
   ArrowsLeftRightIcon,
   TextAaIcon,
   ClockIcon,
+  BracketsCurlyIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -29,16 +30,6 @@ interface TreeCategory {
 
 const menuTree: TreeCategory[] = [
   {
-    label: "UUID",
-    icon: FingerprintSimpleIcon,
-    items: [
-      { label: "Generator", href: "/tools/uuid/generator" },
-      { label: "Bulk Generator", href: "/tools/uuid/bulk" },
-      { label: "Validator", href: "/tools/uuid/validator" },
-      { label: "Inspector", href: "/tools/uuid/inspector" },
-    ],
-  },
-  {
     label: "Base64",
     icon: ArrowsLeftRightIcon,
     items: [
@@ -47,6 +38,17 @@ const menuTree: TreeCategory[] = [
       { label: "PDF", href: "/tools/base64/pdf" },
       { label: "File", href: "/tools/base64/file" },
       { label: "Validator", href: "/tools/base64/validator" },
+    ],
+  },
+  {
+    label: "JSON",
+    icon: BracketsCurlyIcon,
+    items: [
+      { label: "Formatter", href: "/tools/json/formatter" },
+      { label: "CSV Converter", href: "/tools/json/converter" },
+      { label: "YAML Converter", href: "/tools/json/yaml" },
+      { label: "Diff", href: "/tools/json/diff" },
+      { label: "Path", href: "/tools/json/path" },
     ],
   },
   {
@@ -66,6 +68,16 @@ const menuTree: TreeCategory[] = [
     items: [
       { label: "Timestamp", href: "/tools/time/timestamp" },
       { label: "Calculator", href: "/tools/time/calculator" },
+    ],
+  },
+  {
+    label: "UUID",
+    icon: FingerprintSimpleIcon,
+    items: [
+      { label: "Generator", href: "/tools/uuid/generator" },
+      { label: "Bulk Generator", href: "/tools/uuid/bulk" },
+      { label: "Validator", href: "/tools/uuid/validator" },
+      { label: "Inspector", href: "/tools/uuid/inspector" },
     ],
   },
 ];

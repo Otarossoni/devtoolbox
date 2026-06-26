@@ -4,6 +4,7 @@ import {
   ArrowsLeftRightIcon,
   TextAaIcon,
   ClockIcon,
+  BracketsCurlyIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -31,6 +32,12 @@ const tools = [
     description: "Timestamp converter and date calculator",
     icon: ClockIcon,
     href: "/tools/time/timestamp",
+  },
+  {
+    title: "JSON",
+    description: "Format, validate, minify, and convert JSON data",
+    icon: BracketsCurlyIcon,
+    href: "/tools/json/formatter",
   },
 ];
 
