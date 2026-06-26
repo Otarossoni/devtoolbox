@@ -3,6 +3,7 @@ import {
   FingerprintSimpleIcon,
   ArrowsLeftRightIcon,
   TextAaIcon,
+  ClockIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -24,6 +25,12 @@ const tools = [
     description: "Case conversion, character counting, text diffing, and more",
     icon: TextAaIcon,
     href: "/tools/text/case",
+  },
+  {
+    title: "Time",
+    description: "Timestamp converter and date calculator",
+    icon: ClockIcon,
+    href: "/tools/time/timestamp",
   },
 ];
 

@@ -10,6 +10,7 @@ import {
   FingerprintSimpleIcon,
   ArrowsLeftRightIcon,
   TextAaIcon,
+  ClockIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -57,6 +58,14 @@ const menuTree: TreeCategory[] = [
       { label: "Diff Checker", href: "/tools/text/diff" },
       { label: "Lorem Ipsum", href: "/tools/text/lorem" },
       { label: "Replacer", href: "/tools/text/replacer" },
+    ],
+  },
+  {
+    label: "Time",
+    icon: ClockIcon,
+    items: [
+      { label: "Timestamp", href: "/tools/time/timestamp" },
+      { label: "Calculator", href: "/tools/time/calculator" },
     ],
   },
 ];
