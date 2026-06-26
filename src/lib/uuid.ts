@@ -322,3 +322,85 @@ export function detectUUIDVersion(uuid: string): UUIDVersion | null {
     default: return null;
   }
 }
+
+// ---- Inspector utilities ----
+
+export type UUIDVariant = "RFC 4122" | "Microsoft" | "NCS" | "Future";
+
+export function getUUIDVariant(uuid: string): UUIDVariant | null {
+  const hex = uuid.replace(/-/g, "");
+  if (hex.length !== 32) return null;
+  const b8 = parseInt(hex.slice(16, 18), 16);
+  if ((b8 & 0x80) === 0) return "NCS";
+  if ((b8 & 0xC0) === 0x80) return "RFC 4122";
+  if ((b8 & 0xE0) === 0xC0) return "Microsoft";
+  return "Future";
+}
+
+const GREGORIAN_OFFSET = 122192928000000000n;
+
+export function extractUUIDTimestamp(
+  uuid: string,
+  version: UUIDVersion,
+): { ts: number; date: Date } | null {
+  const hex = uuid.replace(/-/g, "");
+  if (hex.length !== 32) return null;
+
+  let timestampNs: bigint;
+
+  if (version === "v1") {
+    const timeLow = BigInt(parseInt(hex.slice(0, 8), 16));
+    const timeMid = BigInt(parseInt(hex.slice(8, 12), 16));
+    const timeHi = BigInt(parseInt(hex.slice(12, 16), 16) & 0x0fff);
+    timestampNs = (timeHi << 48n) | (timeMid << 32n) | timeLow;
+  } else if (version === "v6") {
+    const timeHigh = BigInt(parseInt(hex.slice(0, 8), 16));
+    const timeMid = BigInt(parseInt(hex.slice(8, 12), 16));
+    const timeLow = BigInt(parseInt(hex.slice(12, 16), 16) & 0x0fff);
+    timestampNs = (timeHigh << 28n) | (timeMid << 12n) | timeLow;
+  } else if (version === "v7") {
+    const ms = parseInt(hex.slice(0, 12), 16);
+    return { ts: ms, date: new Date(ms) };
+  } else {
+    return null;
+  }
+
+  const unixMs = Number((timestampNs - GREGORIAN_OFFSET) / 10000n);
+  return { ts: unixMs, date: new Date(unixMs) };
+}
+
+export function extractUUIDNode(uuid: string): string | null {
+  const hex = uuid.replace(/-/g, "");
+  if (hex.length !== 32) return null;
+  const node = hex.slice(20, 32);
+  return [
+    node.slice(0, 2),
+    node.slice(2, 4),
+    node.slice(4, 6),
+    node.slice(6, 8),
+    node.slice(8, 10),
+    node.slice(10, 12),
+  ]
+    .join(":")
+    .toUpperCase();
+}
+
+export function extractUUIDClockSeq(uuid: string): number | null {
+  const hex = uuid.replace(/-/g, "");
+  if (hex.length !== 32) return null;
+  const b8 = parseInt(hex.slice(16, 18), 16);
+  const b9 = parseInt(hex.slice(18, 20), 16);
+  return ((b8 & 0x3f) << 8) | b9;
+}
+
+export function isNilUUID(uuid: string): boolean {
+  return uuid.replace(/-/g, "") === "00000000000000000000000000000000";
+}
+
+export function uuidToHexBytes(uuid: string): string {
+  return uuid
+    .replace(/-/g, "")
+    .toUpperCase()
+    .match(/.{2}/g)!
+    .join(" ");
+}
