@@ -118,7 +118,7 @@ export default function JSONFormatterPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-3xl">
         <div className="animate-5 flex items-center gap-3 mb-8">
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
             <BracketsCurlyIcon className="h-5 w-5 text-[#8A2BE2]" />

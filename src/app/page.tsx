@@ -44,7 +44,7 @@ const tools = [
 export default function Home() {
   return (
     <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-3xl">
         {/* Header */}
         <div className="animate-5 mb-12">
           <h1 className="text-2xl font-bold mb-2">DevToolbox</h1>
