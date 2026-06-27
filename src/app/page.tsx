@@ -6,6 +6,7 @@ import {
   ClockIcon,
   BracketsCurlyIcon,
   ShieldCheckIcon,
+  PaletteIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -15,6 +16,12 @@ const tools = [
     description: "Encode and decode text, files, and more in Base64 format",
     icon: ArrowsLeftRightIcon,
     href: "/tools/base64",
+  },
+  {
+    title: "Color",
+    description: "Convert colors between formats and generate harmonious palettes",
+    icon: PaletteIcon,
+    href: "/tools/color/converter",
   },
   {
     title: "JSON",

@@ -13,6 +13,7 @@ import {
   ClockIcon,
   BracketsCurlyIcon,
   ShieldCheckIcon,
+  PaletteIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -39,6 +40,15 @@ const menuTree: TreeCategory[] = [
       { label: "PDF", href: "/tools/base64/pdf" },
       { label: "File", href: "/tools/base64/file" },
       { label: "Validator", href: "/tools/base64/validator" },
+    ],
+  },
+  {
+    label: "Color",
+    icon: PaletteIcon,
+    items: [
+      { label: "Converter", href: "/tools/color/converter" },
+      { label: "Palette", href: "/tools/color/palette" },
+      { label: "Contrast", href: "/tools/color/contrast" },
     ],
   },
   {
