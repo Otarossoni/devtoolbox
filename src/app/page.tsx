@@ -9,6 +9,7 @@ import {
   PaletteIcon,
   LinkSimpleIcon,
   MarkdownLogoIcon,
+  ImageSquareIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -24,6 +25,12 @@ const tools = [
     description: "Convert colors between formats and generate harmonious palettes",
     icon: PaletteIcon,
     href: "/tools/color/converter",
+  },
+  {
+    title: "Image",
+    description: "Convert and resize images in your browser",
+    icon: ImageSquareIcon,
+    href: "/tools/image/converter",
   },
   {
     title: "JSON",
@@ -56,16 +63,16 @@ const tools = [
     href: "/tools/time/timestamp",
   },
   {
-    title: "UUID",
-    description: "Universal unique identifier generator and validator",
-    icon: FingerprintSimpleIcon,
-    href: "/tools/uuid/generator",
-  },
-  {
     title: "URL",
     description: "Encode, decode, and parse URLs",
     icon: LinkSimpleIcon,
     href: "/tools/url/encoder",
+  },
+  {
+    title: "UUID",
+    description: "Universal unique identifier generator and validator",
+    icon: FingerprintSimpleIcon,
+    href: "/tools/uuid/generator",
   },
 ];
 

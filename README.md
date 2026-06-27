@@ -33,6 +33,20 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 
 **Validator** — Validate Base64 strings and inspect their structure. Detects invalid characters, padding errors, data URIs, URL-safe encoding, and estimates decoded size. Includes text preview for readable content.
 
+### Color
+
+**Converter** — Convert colors between HEX, RGB, HSL, and CSS named formats. Includes a custom color picker with canvas-based free-hand selection and live preview.
+
+**Palette** — Generate color harmonies (complementary, analogous, triadic, tetradic, monochromatic) from a base color. Swatches show HEX and HSL values.
+
+**Contrast** — Check WCAG 2.0 contrast ratios between foreground and background colors. Shows pass/fail for AA and AAA levels with a live text preview.
+
+### Image
+
+**Converter** — Convert images between PNG, JPEG, and WebP formats. Adjustable quality slider for lossy formats. Side-by-side original vs converted preview with file sizes.
+
+**Resizer** — Resize images by exact dimensions with aspect ratio lock. Supports PNG, JPEG, and WebP output. All processing via Canvas API — nothing is uploaded.
+
 ### JSON
 
 **Formatter & Validator** — Format JSON with VS Code-style syntax highlighting, validate structure with line-level error messages, minify to compact output, and explore deeply nested objects with an interactive collapsible tree view.
@@ -48,6 +62,20 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 **Diff** — Compare two JSON objects and find structural differences with a color-coded tree (green added, red removed, amber changed).
 
 **Path** — Extract values from deeply nested JSON using path expressions like `$.store.books[0].title`. Supports key access, array indices, wildcards (`[*]`), and slices (`[0:5]`). Results rendered as an interactive tree.
+
+### Markdown
+
+**Editor** — Write and preview Markdown with live rendering. Supports headings, bold/italic, code blocks, links, images, blockquotes, task lists, and tables. Toggle between Write, Split, and Preview modes. Interactive checkboxes sync back to the source.
+
+**Table Generator** — Create properly formatted Markdown tables with an editable grid. Toggle column alignment (left, center, right). Presets for common sizes (3×3, 4×4, 5×4).
+
+### Security
+
+**Hash Generator** — Generate MD5, SHA-1, SHA-256, and SHA-512 hashes from any input text. Optional HMAC mode with secret key for message authentication.
+
+**Password** — Generate cryptographically secure random passwords. Adjustable length (8–128), character sets, entropy meter, and ambiguous character exclusion.
+
+**JWT Decoder** — Decode JSON Web Tokens into header, payload, and signature parts. Displays expiration status and converts timestamp claims to readable dates.
 
 ### Text
 
@@ -66,6 +94,12 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 **Timestamp Converter** — Convert between Unix timestamps (seconds/milliseconds), ISO 8601, UTC, local time, and relative time. Auto-detects input format. Live clock with current Unix timestamp.
 
 **Date Calculator** — Add or subtract days, weeks, months, years (and more) from any date. Calculate exact differences between two dates broken down as years, months, days, hours, minutes, and seconds.
+
+### URL
+
+**Encoder/Decoder** — Encode and decode URL components with `encodeURIComponent` (full) or `encodeURI` (URL-safe) modes. Preserves or encodes special characters as needed.
+
+**Parser** — Decompose any URL into its structural parts: protocol, host, port, path, query string, and hash. Edit query parameters live and reconstruct the URL.
 
 ### UUID
 

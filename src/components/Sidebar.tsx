@@ -16,6 +16,7 @@ import {
   PaletteIcon,
   LinkSimpleIcon,
   MarkdownLogoIcon,
+  ImageSquareIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -51,6 +52,14 @@ const menuTree: TreeCategory[] = [
       { label: "Converter", href: "/tools/color/converter" },
       { label: "Palette", href: "/tools/color/palette" },
       { label: "Contrast", href: "/tools/color/contrast" },
+    ],
+  },
+  {
+    label: "Image",
+    icon: ImageSquareIcon,
+    items: [
+      { label: "Converter", href: "/tools/image/converter" },
+      { label: "Resizer", href: "/tools/image/resizer" },
     ],
   },
   {
@@ -103,6 +112,14 @@ const menuTree: TreeCategory[] = [
     ],
   },
   {
+    label: "URL",
+    icon: LinkSimpleIcon,
+    items: [
+      { label: "Encoder/Decoder", href: "/tools/url/encoder" },
+      { label: "Parser", href: "/tools/url/parser" },
+    ],
+  },
+  {
     label: "UUID",
     icon: FingerprintSimpleIcon,
     items: [
@@ -110,14 +127,6 @@ const menuTree: TreeCategory[] = [
       { label: "Bulk Generator", href: "/tools/uuid/bulk" },
       { label: "Validator", href: "/tools/uuid/validator" },
       { label: "Inspector", href: "/tools/uuid/inspector" },
-    ],
-  },
-  {
-    label: "URL",
-    icon: LinkSimpleIcon,
-    items: [
-      { label: "Encoder/Decoder", href: "/tools/url/encoder" },
-      { label: "Parser", href: "/tools/url/parser" },
     ],
   },
 ];
