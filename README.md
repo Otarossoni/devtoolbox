@@ -17,28 +17,65 @@
 
 ## About
 
-A collection of focused utilities for everyday development tasks. Built with Next.js App Router + Turbopack, TypeScript, and Tailwind CSS.
+A collection of focused utilities for everyday development tasks. Built with Next.js App Router + Turbopack, TypeScript, Tailwind CSS, and Phosphor Icons. 100% client-side — no data leaves your browser.
 
 ## Tools
-
-### UUID
-
-**Generator** — Generate UUIDs across six versions: v1 (timestamp + MAC), v3 (MD5 + namespace), v4 (random), v5 (SHA-1 + namespace), v6 (reordered timestamp), and v7 (Unix timestamp). Supports deterministic generation for v3 and v5 with namespace selection and custom name input.
-
-**Validator** — Paste any UUID to instantly check validity and identify its version. Real-time feedback as you type.
 
 ### Base64
 
 **Text** — Encode and decode text strings to/from Base64 in real time. UTF-8 safe, handles Unicode and emoji.
 
-**Image** — Encode images to Base64 (drag & drop or file picker) and decode Base64 strings back to images with preview and download. Lossless — the decoded file is binary-identical to the original.
+**Image** — Encode images to Base64 (drag & drop or file picker) and decode Base64 strings back to images with preview and download losslessly.
 
-## Features
+**PDF** — Encode and decode PDF files with blob-based preview rendering and download.
 
-- 🔑 **UUID Generator**: v1, v3, v4, v5, v6, v7 with deterministic support for v3/v5
-- 🔍 **UUID Validator**: Real-time version detection and validation
-- 🔄 **Base64 Text**: Encode and decode with UTF-8 and whitespace support
-- 🖼 **Base64 Image**: Lossless image encode/decode with drag & drop and preview
+**File** — Encode any file type to Base64 and decode it back. Auto-detects MIME type from data URIs.
+
+**Validator** — Validate Base64 strings and inspect their structure. Detects invalid characters, padding errors, data URIs, URL-safe encoding, and estimates decoded size. Includes text preview for readable content.
+
+### JSON
+
+**Formatter & Validator** — Format JSON with VS Code-style syntax highlighting, validate structure with line-level error messages, minify to compact output, and explore deeply nested objects with an interactive collapsible tree view.
+
+**CSV Converter** — Convert JSON arrays of objects to CSV and vice versa. Properly escapes commas, quotes, and newlines.
+
+**YAML Converter** — Convert between JSON and YAML formats. Ideal for config files, Docker Compose, and Kubernetes manifests.
+
+**XML Converter** — Convert between JSON and XML using the browser's native DOMParser. Supports attributes (`@key`) and mixed text content (`#text`). Arrays are auto-wrapped in `<root><item>...</item></root>`.
+
+**Query String** — Convert flat or nested JSON objects to URL query strings and back. Accepts full URLs (with `?`) or raw query strings. Handles nested keys (`key[sub]`) and arrays (`key[]`).
+
+**Diff** — Compare two JSON objects and find structural differences with a color-coded tree (green added, red removed, amber changed).
+
+**Path** — Extract values from deeply nested JSON using path expressions like `$.store.books[0].title`. Supports key access, array indices, wildcards (`[*]`), and slices (`[0:5]`). Results rendered as an interactive tree.
+
+### Text
+
+**Case Switcher** — Convert text between lowercase, UPPERCASE, Title Case, camelCase, PascalCase, snake_case, kebab-case, and CONSTANT_CASE. Auto-detects word boundaries from any input format.
+
+**Char Counter** — Real-time text statistics: characters, words, lines, spaces, sentences, paragraphs, reading time, and UTF-8 byte size. Newlines excluded from character count to match industry convention.
+
+**Diff Checker** — Compare two texts line by line using the Longest Common Subsequence (LCS) algorithm. Color-coded output with line numbers.
+
+**Lorem Ipsum** — Generate placeholder text in paragraphs, sentences, or words. 32-sentence corpus for variety.
+
+**Replacer** — Find and replace text with plain string matching or regex. Supports global, case-insensitive, multiline, and dotall flags. Shows replacement count.
+
+### Time
+
+**Timestamp Converter** — Convert between Unix timestamps (seconds/milliseconds), ISO 8601, UTC, local time, and relative time. Auto-detects input format. Live clock with current Unix timestamp.
+
+**Date Calculator** — Add or subtract days, weeks, months, years (and more) from any date. Calculate exact differences between two dates broken down as years, months, days, hours, minutes, and seconds.
+
+### UUID
+
+**Generator** — Generate UUIDs across six versions: v1 (timestamp + MAC), v3 (MD5 + namespace), v4 (random), v5 (SHA-1 + namespace), v6 (reordered timestamp), and v7 (Unix timestamp). Supports deterministic generation for v3 and v5 with namespace selection and custom name input.
+
+**Bulk Generator** — Generate up to 1,000 UUIDs at once. Export as .txt (one per line) or .json (array). Ideal for test fixtures and database seeds.
+
+**Validator** — Paste any UUID to instantly check validity and identify its version. Real-time feedback as you type.
+
+**Inspector** — Decode a UUID's internal structure: version, variant, embedded timestamp (for v1/v6/v7), clock sequence, MAC address, nil UUID detection, and raw bytes. Color-coded field breakdown.
 
 ## Stack
 

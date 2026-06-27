@@ -62,3 +62,7 @@ src/
 - Icons per category: `FingerprintSimpleIcon` (UUID), `ArrowsLeftRightIcon` (Base64)
 - Version from `package.json` via dynamic import
 - Footer: version + creator link
+
+### Ordering
+- **Categories** in sidebar and home page are sorted alphabetically (Base64, JSON, Text, Time, UUID)
+- **Items within a category** follow logical/usage order (e.g., Generator before Validator)
