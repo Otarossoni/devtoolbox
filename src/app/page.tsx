@@ -5,6 +5,7 @@ import {
   TextAaIcon,
   ClockIcon,
   BracketsCurlyIcon,
+  ShieldCheckIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -20,6 +21,12 @@ const tools = [
     description: "Format, validate, convert, diff, and explore JSON data and related formats",
     icon: BracketsCurlyIcon,
     href: "/tools/json/formatter",
+  },
+  {
+    title: "Security",
+    description: "Hash generator, password generator, and JWT decoder",
+    icon: ShieldCheckIcon,
+    href: "/tools/security/hash",
   },
   {
     title: "Text",

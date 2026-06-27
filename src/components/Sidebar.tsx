@@ -12,6 +12,7 @@ import {
   TextAaIcon,
   ClockIcon,
   BracketsCurlyIcon,
+  ShieldCheckIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -51,6 +52,15 @@ const menuTree: TreeCategory[] = [
       { label: "Query String", href: "/tools/json/querystring" },
       { label: "Diff", href: "/tools/json/diff" },
       { label: "Path", href: "/tools/json/path" },
+    ],
+  },
+  {
+    label: "Security",
+    icon: ShieldCheckIcon,
+    items: [
+      { label: "Hash Generator", href: "/tools/security/hash" },
+      { label: "Password", href: "/tools/security/password" },
+      { label: "JWT Decoder", href: "/tools/security/jwt" },
     ],
   },
   {
