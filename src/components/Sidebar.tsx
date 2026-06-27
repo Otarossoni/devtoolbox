@@ -15,6 +15,7 @@ import {
   ShieldCheckIcon,
   PaletteIcon,
   LinkSimpleIcon,
+  MarkdownLogoIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -63,6 +64,14 @@ const menuTree: TreeCategory[] = [
       { label: "Query String", href: "/tools/json/querystring" },
       { label: "Diff", href: "/tools/json/diff" },
       { label: "Path", href: "/tools/json/path" },
+    ],
+  },
+  {
+    label: "Markdown",
+    icon: MarkdownLogoIcon,
+    items: [
+      { label: "Editor", href: "/tools/markdown/editor" },
+      { label: "Table", href: "/tools/markdown/table" },
     ],
   },
   {

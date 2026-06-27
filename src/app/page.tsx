@@ -8,6 +8,7 @@ import {
   ShieldCheckIcon,
   PaletteIcon,
   LinkSimpleIcon,
+  MarkdownLogoIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -29,6 +30,12 @@ const tools = [
     description: "Format, validate, convert, diff, and explore JSON data and related formats",
     icon: BracketsCurlyIcon,
     href: "/tools/json/formatter",
+  },
+  {
+    title: "Markdown",
+    description: "Write and preview Markdown with live rendering and table generator",
+    icon: MarkdownLogoIcon,
+    href: "/tools/markdown/editor",
   },
   {
     title: "Security",
