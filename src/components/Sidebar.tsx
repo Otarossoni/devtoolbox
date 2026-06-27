@@ -14,6 +14,7 @@ import {
   BracketsCurlyIcon,
   ShieldCheckIcon,
   PaletteIcon,
+  LinkSimpleIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -100,6 +101,14 @@ const menuTree: TreeCategory[] = [
       { label: "Bulk Generator", href: "/tools/uuid/bulk" },
       { label: "Validator", href: "/tools/uuid/validator" },
       { label: "Inspector", href: "/tools/uuid/inspector" },
+    ],
+  },
+  {
+    label: "URL",
+    icon: LinkSimpleIcon,
+    items: [
+      { label: "Encoder/Decoder", href: "/tools/url/encoder" },
+      { label: "Parser", href: "/tools/url/parser" },
     ],
   },
 ];

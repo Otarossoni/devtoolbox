@@ -7,6 +7,7 @@ import {
   BracketsCurlyIcon,
   ShieldCheckIcon,
   PaletteIcon,
+  LinkSimpleIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -52,6 +53,12 @@ const tools = [
     description: "Universal unique identifier generator and validator",
     icon: FingerprintSimpleIcon,
     href: "/tools/uuid/generator",
+  },
+  {
+    title: "URL",
+    description: "Encode, decode, and parse URLs",
+    icon: LinkSimpleIcon,
+    href: "/tools/url/encoder",
   },
 ];
 
