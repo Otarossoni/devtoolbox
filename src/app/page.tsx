@@ -10,16 +10,16 @@ import {
 
 const tools = [
   {
-    title: "UUID",
-    description: "Universal unique identifier generator and validator",
-    icon: FingerprintSimpleIcon,
-    href: "/tools/uuid/generator",
-  },
-  {
     title: "Base64",
     description: "Encode and decode text, files, and more in Base64 format",
     icon: ArrowsLeftRightIcon,
     href: "/tools/base64",
+  },
+  {
+    title: "JSON",
+    description: "Format, validate, convert, diff, and explore JSON data and related formats",
+    icon: BracketsCurlyIcon,
+    href: "/tools/json/formatter",
   },
   {
     title: "Text",
@@ -34,10 +34,10 @@ const tools = [
     href: "/tools/time/timestamp",
   },
   {
-    title: "JSON",
-    description: "Format, validate, convert, diff, and explore JSON data and related formats",
-    icon: BracketsCurlyIcon,
-    href: "/tools/json/formatter",
+    title: "UUID",
+    description: "Universal unique identifier generator and validator",
+    icon: FingerprintSimpleIcon,
+    href: "/tools/uuid/generator",
   },
 ];
 
