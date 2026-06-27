@@ -60,6 +60,7 @@ const menuTree: TreeCategory[] = [
     items: [
       { label: "Converter", href: "/tools/image/converter" },
       { label: "Resizer", href: "/tools/image/resizer" },
+      { label: "Extractor", href: "/tools/image/extractor" },
     ],
   },
   {

@@ -47,6 +47,8 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 
 **Resizer** — Resize images by exact dimensions with aspect ratio lock. Supports PNG, JPEG, and WebP output. All processing via Canvas API — nothing is uploaded.
 
+**Extractor** — Upload an image and click on any pixel to extract its exact color. Returns HEX, RGB, and HSL values. Includes a zoom loupe that follows the cursor for pixel-perfect selection.
+
 ### JSON
 
 **Formatter & Validator** — Format JSON with VS Code-style syntax highlighting, validate structure with line-level error messages, minify to compact output, and explore deeply nested objects with an interactive collapsible tree view.

@@ -30,7 +30,7 @@ src/
 │   └── tools/
 │       ├── base64/        # Text, Image, PDF, File, Validator
 │       ├── color/         # Converter, Palette, Contrast
-│       ├── image/         # Converter, Resizer
+│       ├── image/         # Converter, Resizer, Extractor
 │       ├── json/          # Formatter, CSV/YAML/XML, Diff, Path, Query String
 │       ├── markdown/      # Editor, Table Generator
 │       ├── security/      # Hash Generator, Password, JWT Decoder
