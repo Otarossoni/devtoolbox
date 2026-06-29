@@ -6,13 +6,15 @@ import {
   DownloadSimpleIcon,
   ImageIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import { jsPDF } from "jspdf";
 
-type Format = "png" | "jpeg" | "webp";
+type Format = "png" | "jpeg" | "webp" | "pdf";
 
 const FORMATS: { value: Format; label: string; mime: string }[] = [
   { value: "png", label: "PNG", mime: "image/png" },
   { value: "jpeg", label: "JPEG", mime: "image/jpeg" },
   { value: "webp", label: "WebP", mime: "image/webp" },
+  { value: "pdf", label: "PDF", mime: "application/pdf" },
 ];
 
 function formatSize(bytes: number): string {
@@ -54,20 +56,38 @@ export default function ImageConverterPage() {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
         ctx.drawImage(img, 0, 0);
-        const mime = FORMATS.find((f) => f.value === format)!.mime;
-        const q = format === "png" ? undefined : quality;
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return;
-            if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-            const url = URL.createObjectURL(blob);
-            blobUrlRef.current = url;
-            setConvertedSrc(url);
-            setConvertedSize(blob.size);
-          },
-          mime,
-          q,
-        );
+
+        if (format === "pdf") {
+          const pxToMm = (px: number) => px * 0.264583;
+          const pdf = new jsPDF({
+            orientation: img.naturalWidth > img.naturalHeight ? "landscape" : "portrait",
+            unit: "mm",
+            format: [pxToMm(img.naturalWidth), pxToMm(img.naturalHeight)],
+          });
+          const jpegData = canvas.toDataURL("image/jpeg", quality);
+          pdf.addImage(jpegData, "JPEG", 0, 0, pxToMm(img.naturalWidth), pxToMm(img.naturalHeight));
+          const blob = pdf.output("blob");
+          if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+          const url = URL.createObjectURL(blob);
+          blobUrlRef.current = url;
+          setConvertedSrc(url);
+          setConvertedSize(blob.size);
+        } else {
+          const mime = FORMATS.find((f) => f.value === format)!.mime;
+          const q = format === "png" ? undefined : quality;
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) return;
+              if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+              const url = URL.createObjectURL(blob);
+              blobUrlRef.current = url;
+              setConvertedSrc(url);
+              setConvertedSize(blob.size);
+            },
+            mime,
+            q,
+          );
+        }
       };
       img.src = dataUrl;
     };
@@ -122,7 +142,7 @@ export default function ImageConverterPage() {
           <div>
             <h1 className="text-lg font-semibold">Image Converter</h1>
             <p className="text-sm text-neutral-500">
-              Convert images between PNG, JPEG, and WebP
+              Convert images between PNG, JPEG, WebP, and PDF
             </p>
           </div>
         </div>
@@ -182,7 +202,7 @@ export default function ImageConverterPage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 mb-4">
+              <div className="grid grid-cols-4 gap-2 mb-4">
                 {FORMATS.map((f) => (
                   <button
                     key={f.value}
@@ -242,12 +262,20 @@ export default function ImageConverterPage() {
                       {FORMATS.find((f) => f.value === format)!.label} · {formatSize(convertedSize)}
                     </span>
                     <div className="rounded-lg bg-black border border-[#262626] p-2 flex items-center justify-center">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={convertedSrc}
-                        alt="Converted"
-                        className="max-w-full max-h-60 rounded object-contain"
-                      />
+                      {format === "pdf" ? (
+                        <embed
+                          src={convertedSrc}
+                          type="application/pdf"
+                          className="w-full h-60 rounded object-contain"
+                        />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={convertedSrc}
+                          alt="Converted"
+                          className="max-w-full max-h-60 rounded object-contain"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -270,18 +298,19 @@ export default function ImageConverterPage() {
           <h2 className="text-sm font-semibold mb-3">About Image Converter</h2>
           <div className="space-y-3 text-sm text-neutral-400">
             <p>
-              Convert images between PNG, JPEG, and WebP formats entirely in
+              Convert images between PNG, JPEG, WebP, and PDF formats entirely in
               your browser. Nothing is uploaded — all processing happens
-              locally via the Canvas API.
+              locally via the Canvas API and jsPDF.
             </p>
             <p>
               <strong>PNG</strong> — lossless, supports transparency.{" "}
               <strong>JPEG</strong> — lossy, smaller files, no transparency.{" "}
               <strong>WebP</strong> — modern format, smaller than both with
-              quality comparable to JPEG.
+              quality comparable to JPEG.{" "}
+              <strong>PDF</strong> — embeds the image in a PDF document.
             </p>
             <p>
-              Adjust quality (0.1–1.0) for JPEG and WebP. PNG ignores quality
+              Adjust quality (0.1–1.0) for JPEG, WebP, and PDF. PNG ignores quality
               since it&rsquo;s always lossless. Click <strong>Convert</strong>{" "}
               to re-process after changing options.
             </p>

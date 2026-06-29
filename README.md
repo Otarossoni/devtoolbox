@@ -43,7 +43,7 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 
 ### Image
 
-**Converter** — Convert images between PNG, JPEG, and WebP formats. Adjustable quality slider for lossy formats. Side-by-side original vs converted preview with file sizes.
+**Converter** — Convert images between PNG, JPEG, WebP, and PDF formats. Adjustable quality slider for lossy formats. Side-by-side original vs converted preview with file sizes.
 
 **Resizer** — Resize images by exact dimensions with aspect ratio lock. Supports PNG, JPEG, and WebP output. All processing via Canvas API — nothing is uploaded.
 
