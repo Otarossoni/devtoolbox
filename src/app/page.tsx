@@ -47,7 +47,7 @@ const tools = [
   },
   {
     title: "Number",
-    description: "Base conversion, bitwise operations, and numeric utilities",
+    description: "Base conversion, bitwise operations, and ASCII reference",
     icon: HashStraightIcon,
     href: "/tools/number/base",
   },

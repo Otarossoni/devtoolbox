@@ -91,6 +91,7 @@ const menuTree: TreeCategory[] = [
     items: [
       { label: "Base Converter", href: "/tools/number/base" },
       { label: "Bitwise Calculator", href: "/tools/number/bitwise" },
+      { label: "ASCII Table", href: "/tools/number/ascii" },
     ],
   },
   {

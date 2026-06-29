@@ -77,6 +77,8 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 
 **Bitwise Calculator** — Perform bitwise operations (AND, OR, XOR, NOT, left/right shift) on integers with 32-bit nibble visualization.
 
+**ASCII Table** — Interactive reference table (0–127) with search, click-to-inspect detail cards showing decimal, hex, octal, binary, name, and HTML entity for every character.
+
 ### Security
 
 **Hash Generator** — Generate MD5, SHA-1, SHA-256, and SHA-512 hashes from any input text. Optional HMAC mode with secret key for message authentication.
