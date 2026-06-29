@@ -71,6 +71,12 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 
 **Table Generator** — Create properly formatted Markdown tables with an editable grid. Toggle column alignment (left, center, right). Presets for common sizes (3×3, 4×4, 5×4).
 
+### Number
+
+**Base Converter** — Convert numbers between binary (2), octal (8), decimal (10), and hexadecimal (16). Supports arbitrarily large integers and automatic prefix detection (`0b`, `0o`, `0x`).
+
+**Bitwise Calculator** — Perform bitwise operations (AND, OR, XOR, NOT, left/right shift) on integers with 32-bit nibble visualization.
+
 ### Security
 
 **Hash Generator** — Generate MD5, SHA-1, SHA-256, and SHA-512 hashes from any input text. Optional HMAC mode with secret key for message authentication.

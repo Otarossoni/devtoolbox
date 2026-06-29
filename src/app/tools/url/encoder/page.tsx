@@ -12,7 +12,7 @@ type EncMode = "encode" | "decode";
 export default function URLEncoderPage() {
   const [mode, setMode] = useState<EncMode>("encode");
   const [input, setInput] = useState("");
-  const [encodeAll, setEncodeAll] = useState(true);
+  const [encodeAll, setEncodeAll] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const output = useMemo(() => {

@@ -17,6 +17,7 @@ import {
   LinkSimpleIcon,
   MarkdownLogoIcon,
   ImageSquareIcon,
+  HashStraightIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -82,6 +83,14 @@ const menuTree: TreeCategory[] = [
     items: [
       { label: "Editor", href: "/tools/markdown/editor" },
       { label: "Table", href: "/tools/markdown/table" },
+    ],
+  },
+  {
+    label: "Number",
+    icon: HashStraightIcon,
+    items: [
+      { label: "Base Converter", href: "/tools/number/base" },
+      { label: "Bitwise Calculator", href: "/tools/number/bitwise" },
     ],
   },
   {

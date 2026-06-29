@@ -10,6 +10,7 @@ import {
   LinkSimpleIcon,
   MarkdownLogoIcon,
   ImageSquareIcon,
+  HashStraightIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -43,6 +44,12 @@ const tools = [
     description: "Write and preview Markdown with live rendering and table generator",
     icon: MarkdownLogoIcon,
     href: "/tools/markdown/editor",
+  },
+  {
+    title: "Number",
+    description: "Base conversion, bitwise operations, and numeric utilities",
+    icon: HashStraightIcon,
+    href: "/tools/number/base",
   },
   {
     title: "Security",
