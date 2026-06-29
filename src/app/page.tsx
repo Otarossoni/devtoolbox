@@ -66,7 +66,7 @@ const tools = [
   },
   {
     title: "Text",
-    description: "Case conversion, character counting, text diffing, and more",
+    description: "Case conversion, character counting, HTML entities, text diffing, and more",
     icon: TextAaIcon,
     href: "/tools/text/case",
   },

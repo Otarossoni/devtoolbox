@@ -118,8 +118,10 @@ const menuTree: TreeCategory[] = [
       { label: "Case Switcher", href: "/tools/text/case" },
       { label: "Char Counter", href: "/tools/text/counter" },
       { label: "Diff Checker", href: "/tools/text/diff" },
+      { label: "HTML Entities", href: "/tools/text/htmlentities" },
       { label: "Lorem Ipsum", href: "/tools/text/lorem" },
       { label: "Replacer", href: "/tools/text/replacer" },
+      { label: "Text to Slug", href: "/tools/text/slug" },
     ],
   },
   {

@@ -99,9 +99,13 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 
 **Diff Checker** — Compare two texts line by line using the Longest Common Subsequence (LCS) algorithm. Color-coded output with line numbers.
 
+**HTML Entities** — Encode and decode HTML entities. Encode safely replaces `&`, `<`, `>`, `"`, and `'`. Optionally convert emoji and non-ASCII to hex entities (`&#x1F600;`). Decode uses the browser's native parser for all named and numeric entities.
+
 **Lorem Ipsum** — Generate placeholder text in paragraphs, sentences, or words. 32-sentence corpus for variety.
 
 **Replacer** — Find and replace text with plain string matching or regex. Supports global, case-insensitive, multiline, and dotall flags. Shows replacement count.
+
+**Text to Slug** — Convert text to URL-friendly slugs. Removes accents, lowercases, and replaces non-alphanumeric characters with hyphens, underscores, or a custom separator.
 
 ### Time
 
