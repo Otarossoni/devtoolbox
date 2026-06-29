@@ -79,6 +79,10 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 
 **ASCII Table** — Interactive reference table (0–127) with search, click-to-inspect detail cards showing decimal, hex, octal, binary, name, and HTML entity for every character.
 
+### QR Code
+
+**Generator** — Generate QR codes from any text or URL with live preview. Adjustable error correction (L/M/Q/H), size (128–1024px), margin, and colors. Download as PNG.
+
 ### Security
 
 **Hash Generator** — Generate MD5, SHA-1, SHA-256, and SHA-512 hashes from any input text. Optional HMAC mode with secret key for message authentication.

@@ -11,6 +11,7 @@ import {
   MarkdownLogoIcon,
   ImageSquareIcon,
   HashStraightIcon,
+  QrCodeIcon,
   ArrowRightIcon,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -50,6 +51,12 @@ const tools = [
     description: "Base conversion, bitwise operations, and ASCII reference",
     icon: HashStraightIcon,
     href: "/tools/number/base",
+  },
+  {
+    title: "QR Code",
+    description: "Generate QR codes from any text or URL, live in your browser",
+    icon: QrCodeIcon,
+    href: "/tools/qrcode/generator",
   },
   {
     title: "Security",

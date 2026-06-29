@@ -18,6 +18,7 @@ import {
   MarkdownLogoIcon,
   ImageSquareIcon,
   HashStraightIcon,
+  QrCodeIcon,
   CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
@@ -92,6 +93,13 @@ const menuTree: TreeCategory[] = [
       { label: "Base Converter", href: "/tools/number/base" },
       { label: "Bitwise Calculator", href: "/tools/number/bitwise" },
       { label: "ASCII Table", href: "/tools/number/ascii" },
+    ],
+  },
+  {
+    label: "QR Code",
+    icon: QrCodeIcon,
+    items: [
+      { label: "Generator", href: "/tools/qrcode/generator" },
     ],
   },
   {
