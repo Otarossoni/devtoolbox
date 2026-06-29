@@ -130,6 +130,7 @@ const menuTree: TreeCategory[] = [
     items: [
       { label: "Timestamp", href: "/tools/time/timestamp" },
       { label: "Calculator", href: "/tools/time/calculator" },
+      { label: "Cron Parser", href: "/tools/time/cron" },
     ],
   },
   {

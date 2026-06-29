@@ -72,7 +72,7 @@ const tools = [
   },
   {
     title: "Time",
-    description: "Timestamp converter and date calculator",
+    description: "Timestamp converter, date calculator, and cron expression parser",
     icon: ClockIcon,
     href: "/tools/time/timestamp",
   },

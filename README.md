@@ -113,6 +113,8 @@ A collection of focused utilities for everyday development tasks. Built with Nex
 
 **Date Calculator** — Add or subtract days, weeks, months, years (and more) from any date. Calculate exact differences between two dates broken down as years, months, days, hours, minutes, and seconds.
 
+**Cron Parser** — Parse cron expressions into human-readable descriptions. Validates syntax, breaks down each field with meaning, and shows the next five execution times. Includes presets (@hourly, @daily, weekdays 9am).
+
 ### URL
 
 **Encoder/Decoder** — Encode and decode URL components with `encodeURIComponent` (full) or `encodeURI` (URL-safe) modes. Preserves or encodes special characters as needed.
