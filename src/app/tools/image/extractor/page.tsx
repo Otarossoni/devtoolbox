@@ -111,6 +111,24 @@ export default function PixelExtractorPage() {
     setColor(null);
   }, []);
 
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const blob = item.getAsFile();
+          if (blob) {
+            processFile(new File([blob], "clipboard-image.png", { type: blob.type }));
+            break;
+          }
+        }
+      }
+    };
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [processFile]);
+
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -192,7 +210,7 @@ export default function PixelExtractorPage() {
               }`}
             >
               <ImageIcon className="h-8 w-8 text-neutral-600" />
-              <span className="text-sm text-neutral-500">Drop an image or click to browse</span>
+              <span className="text-sm text-neutral-500">Drop an image, paste (Ctrl+V), or click to browse</span>
             </div>
           ) : (
             <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer">
