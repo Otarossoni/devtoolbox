@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import pkg from "../../package.json";
+import AppIcon from "@/components/AppIcon";
 import {
   ListIcon,
   XIcon,
@@ -19,7 +20,6 @@ import {
   ImageSquareIcon,
   HashStraightIcon,
   QrCodeIcon,
-  CaretDownIcon,
   CaretRightIcon,
   HouseIcon,
 } from "@phosphor-icons/react/dist/ssr";
@@ -172,40 +172,43 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className="px-6 pt-8 pb-6">
+    <div className="flex h-full flex-col">
+      {/* Logo — the mobile drawer reserves room for the close button */}
+      <div className={`pt-8 pb-5 pl-6 ${onNavigate ? "pr-14" : "pr-3"}`}>
         <Link
           href="/"
           onClick={onNavigate}
-          className="text-lg font-semibold text-[#ededed] hover:text-[#8A2BE2] transition-colors duration-200"
+          className="group flex items-center gap-2.5 rounded-control"
         >
-          DevToolbox
+          <AppIcon size={36} />
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-lg leading-tight font-bold tracking-[-0.025em] text-fg transition-colors group-hover:text-accent">
+              DevToolbox
+            </span>
+            <span className="text-[13px] text-fg-secondary">Software development utilities.</span>
+          </span>
         </Link>
-        <p className="text-xs text-neutral-500 mt-1">Software development utilities.</p>
       </div>
 
       {/* Home link */}
-      <div className="px-4 pb-4">
+      <div className="px-3">
         <Link
           href="/"
           onClick={onNavigate}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
+          aria-current={pathname === "/" ? "page" : undefined}
+          className={`flex min-h-control items-center gap-3 rounded-control px-3 text-sm font-medium transition-colors ${
             pathname === "/"
-              ? "bg-[#171717] text-[#8A2BE2]"
-              : "text-neutral-400 hover:text-[#ededed] hover:bg-[#171717]"
+              ? "bg-surface-elevated text-accent-text"
+              : "text-fg-secondary hover:bg-surface-hover hover:text-fg"
           }`}
         >
-          <HouseIcon className="h-4 w-4" />
+          <HouseIcon className="size-[18px]" />
           Home
         </Link>
       </div>
 
-      {/* Divider */}
-      <div className="mx-4 border-t border-[#262626]" />
-
       {/* Tree menu */}
-      <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-4">
         {menuTree.map((category) => {
           const isOpen = openCategories[category.label];
           const hasActiveChild = category.items.some(
@@ -213,28 +216,26 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           );
 
           return (
-            <div key={category.label}>
+            <div key={category.label} className="flex flex-col">
               <button
                 onClick={() => toggleCategory(category.label)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors duration-200 cursor-pointer ${
-                  hasActiveChild
-                    ? "text-[#ededed]"
-                    : "text-neutral-400 hover:text-[#ededed] hover:bg-[#171717]"
+                aria-expanded={!!isOpen}
+                className={`pressable flex min-h-control w-full cursor-pointer items-center gap-3 rounded-control px-3 text-left text-sm font-medium transition hover:bg-surface-hover hover:text-fg ${
+                  hasActiveChild ? "text-fg" : "text-fg-secondary"
                 }`}
               >
-                <category.icon className="h-4 w-4 shrink-0" />
-                <span className="flex-1 text-left">{category.label}</span>
-                {isOpen ? (
-                  <CaretDownIcon className="h-3.5 w-3.5 text-neutral-500 transition-transform duration-200" />
-                ) : (
-                  <CaretRightIcon className="h-3.5 w-3.5 text-neutral-500 transition-transform duration-200" />
-                )}
+                <category.icon className="size-[18px] shrink-0" />
+                <span className="flex-1">{category.label}</span>
+                <CaretRightIcon
+                  className={`size-3.5 text-fg-subtle transition-transform ${isOpen ? "rotate-90" : ""}`}
+                />
               </button>
 
               <div
-                className={`ml-4 space-y-0.5 border-l border-[#262626] pl-3 overflow-hidden transition-all duration-300 ease-out ${
-                  isOpen ? "max-h-80 mt-0.5 opacity-100" : "max-h-0 opacity-0"
+                className={`flex flex-col gap-0.5 overflow-hidden transition-[max-height,opacity,padding] ${
+                  isOpen ? "pt-0.5 opacity-100" : "opacity-0"
                 }`}
+                style={{ maxHeight: isOpen ? category.items.length * 46 + 8 : 0 }}
               >
                 {category.items.map((item) => {
                   const isActive = pathname === item.href;
@@ -243,10 +244,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                       key={item.href}
                       href={item.href}
                       onClick={onNavigate}
-                      className={`block px-3 py-1.5 rounded-md text-sm transition-colors duration-200 ${
+                      tabIndex={isOpen ? undefined : -1}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`flex min-h-control items-center rounded-control pr-3 pl-[42px] text-sm transition-colors ${
                         isActive
-                          ? "text-[#8A2BE2] bg-[#171717]"
-                          : "text-neutral-500 hover:text-[#ededed] hover:bg-[#171717]"
+                          ? "bg-surface-elevated font-semibold text-accent-text"
+                          : "font-medium text-fg-secondary hover:text-fg"
                       }`}
                     >
                       {item.label}
@@ -260,14 +263,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-[#262626]">
-        <p className="text-[10px] text-neutral-600">
+      <div className="px-6 pt-4 pb-6">
+        <p className="text-xs leading-normal text-fg-tertiary">
           v{pkg.version} · by{" "}
           <a
             href="https://otaviorossoni.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-[#8A2BE2] transition-colors duration-200"
+            className="rounded-inline transition-colors hover:text-accent"
           >
             Otávio Monteiro Rossoni
           </a>
@@ -280,43 +283,55 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Esc closes the mobile drawer
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isOpen]);
+
   return (
     <>
-      {/* Mobile hamburger button */}
+      {/* Mobile menu button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-[#171717] border border-[#262626] text-neutral-400 hover:text-[#ededed] transition-colors duration-200 cursor-pointer"
+        className="pressable fixed top-4 left-4 z-50 flex size-control cursor-pointer items-center justify-center rounded-control bg-surface-elevated text-fg transition lg:hidden"
         aria-label="Abrir menu"
+        aria-expanded={isOpen}
       >
-        <ListIcon className="h-5 w-5" />
+        <ListIcon className="size-5" />
       </button>
 
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+      {/* Mobile scrim */}
+      <div
+        className={`fixed inset-0 z-40 bg-background/60 transition-opacity lg:hidden ${
+          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        onClick={() => setIsOpen(false)}
+        aria-hidden
+      />
 
       {/* Mobile sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-[#000000] border-r border-[#262626] transform transition-transform duration-300 ease-in-out lg:hidden ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 left-0 z-50 h-full w-sidebar bg-surface transition-[transform,visibility] lg:hidden ${
+          isOpen ? "visible translate-x-0" : "invisible -translate-x-full"
         }`}
       >
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute top-4 right-4 p-1 rounded-md text-neutral-500 hover:text-[#ededed] transition-colors duration-200 cursor-pointer"
+          className="pressable absolute top-5 right-3 flex size-control cursor-pointer items-center justify-center rounded-control text-fg-secondary transition hover:bg-surface-elevated hover:text-fg"
           aria-label="Fechar menu"
         >
-          <XIcon className="h-5 w-5" />
+          <XIcon className="size-5" />
         </button>
         <SidebarContent onNavigate={() => setIsOpen(false)} />
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-64 h-screen sticky top-0 bg-[#000000] border-r border-[#262626] shrink-0">
+      <aside className="sticky top-0 hidden h-screen w-sidebar shrink-0 bg-surface lg:block">
         <SidebarContent />
       </aside>
     </>
