@@ -76,6 +76,14 @@ export function detectAndParse(input: string): Date | null {
     return new Date(parseInt(trimmed));
   }
 
+  // Other integers (e.g. 0, negatives, short or long values): seconds, or milliseconds when large.
+  // 4-digit values are left to Date parsing, which reads them as years.
+  if (/^-?\d+$/.test(trimmed) && !/^\d{4}$/.test(trimmed)) {
+    const n = Number(trimmed);
+    const d = new Date(Math.abs(n) >= 1e11 ? n : n * 1000);
+    if (!isNaN(d.getTime())) return d;
+  }
+
   // ISO 8601
   const isoMatch = trimmed.match(
     /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})(?:\.\d+)?(Z|[+-]\d{2}:?\d{2})?$/,

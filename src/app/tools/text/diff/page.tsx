@@ -3,6 +3,11 @@
 import { useState, useCallback } from "react";
 import { GitDiffIcon } from "@phosphor-icons/react/dist/ssr";
 import { computeDiff } from "@/lib/text";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard, FieldLabel, CardMeta } from "@/components/Card";
+import { TextArea } from "@/components/Field";
+import Button from "@/components/Button";
+import { Actions } from "@/components/Output";
 
 export default function DiffCheckerPage() {
   const [left, setLeft] = useState("");
@@ -14,113 +19,85 @@ export default function DiffCheckerPage() {
   }, [left, right]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <GitDiffIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Diff Checker</h1>
-            <p className="text-sm text-neutral-500">
-              Compare two texts line by line
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={GitDiffIcon}
+        title="Diff Checker"
+        description="Compare two texts line by line"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                  Original
-                </span>
-              </div>
-              <textarea
+      <CardStack>
+        <Card>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <FieldLabel htmlFor="diff-left">Original</FieldLabel>
+              <TextArea
+                id="diff-left"
                 value={left}
                 onChange={(e) => setLeft(e.target.value)}
                 placeholder="Paste original text..."
                 rows={10}
-                className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200 resize-none"
               />
             </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                  Modified
-                </span>
-              </div>
-              <textarea
+            <div className="flex flex-col gap-2">
+              <FieldLabel htmlFor="diff-right">Modified</FieldLabel>
+              <TextArea
+                id="diff-right"
                 value={right}
                 onChange={(e) => setRight(e.target.value)}
                 placeholder="Paste modified text..."
                 rows={10}
-                className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200 resize-none"
               />
             </div>
           </div>
-
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={handleCompare}
-              className="inline-flex items-center gap-1.5 px-6 py-2 rounded-md text-sm font-medium bg-[#8A2BE2] text-white hover:bg-[#7a1fd1] transition-all duration-200 cursor-pointer"
-            >
-              <GitDiffIcon className="h-4 w-4" />
+          <Actions align="center">
+            <Button variant="primary" size="md" icon={GitDiffIcon} onClick={handleCompare}>
               Compare
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Actions>
+        </Card>
 
         {diff && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] mb-4 overflow-hidden">
-            <div className="flex items-center justify-between px-6 pt-4 pb-2">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                Diff
-              </span>
-              <span className="text-xs text-neutral-600">
-                {diff.length} lines
-              </span>
-            </div>
-
-            {diff.length > 0 ? (
-              <div className="overflow-auto max-h-96">
-                <table className="w-full text-xs font-mono">
+          <Card label="Diff" actions={<CardMeta>{diff.length} lines</CardMeta>}>
+            {diff.some((line) => line.type !== "same") ? (
+              <div className="max-h-96 overflow-auto rounded-control bg-field py-2">
+                <table className="w-full font-mono text-xs">
                   <tbody>
                     {diff.map((line, i) => (
                       <tr
                         key={i}
                         className={
                           line.type === "add"
-                            ? "bg-green-500/10"
+                            ? "bg-success-tint"
                             : line.type === "remove"
-                              ? "bg-red-500/10"
+                              ? "bg-error-tint"
                               : ""
                         }
                       >
-                        <td className="w-8 text-right text-neutral-600 px-2 py-0.5 select-none border-r border-[#262626]">
+                        <td className="w-8 px-2 py-0.5 text-right text-fg-tertiary select-none">
                           {line.leftLine ?? ""}
                         </td>
-                        <td className="w-8 text-right text-neutral-600 px-2 py-0.5 select-none border-r border-[#262626]">
+                        <td className="w-8 px-2 py-0.5 text-right text-fg-tertiary select-none">
                           {line.rightLine ?? ""}
                         </td>
                         <td
-                          className={`w-4 text-center px-1 py-0.5 select-none ${
+                          className={`w-4 px-1 py-0.5 text-center select-none ${
                             line.type === "add"
-                              ? "text-green-500"
+                              ? "text-success"
                               : line.type === "remove"
-                                ? "text-red-500"
-                                : "text-neutral-600"
+                                ? "text-error"
+                                : "text-fg-tertiary"
                           }`}
                         >
                           {line.type === "add" ? "+" : line.type === "remove" ? "-" : ""}
                         </td>
                         <td
-                          className={`px-3 py-0.5 whitespace-pre-wrap break-all ${
+                          className={`px-3 py-0.5 break-all whitespace-pre-wrap ${
                             line.type === "add"
-                              ? "text-green-400"
+                              ? "text-success"
                               : line.type === "remove"
-                                ? "text-red-400"
-                                : "text-[#ededed]"
+                                ? "text-error"
+                                : "text-fg"
                           }`}
                         >
                           {line.text}
@@ -131,36 +108,33 @@ export default function DiffCheckerPage() {
                 </table>
               </div>
             ) : (
-              <div className="text-center py-8 px-6">
-                <span className="text-sm text-neutral-500">
+              <div className="px-6 py-8 text-center">
+                <span className="text-sm text-fg-secondary">
                   Texts are identical — no differences found.
                 </span>
               </div>
             )}
-          </div>
+          </Card>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Diff</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              Compare two texts line by line using the Longest Common
-              Subsequence (LCS) algorithm.
-            </p>
-            <p>
-              <span className="text-red-400">Red lines</span> were removed
-              from the original. <span className="text-green-400">Green lines</span>{" "}
-              were added in the modified version. Unchanged lines remain in
-              the default color.
-            </p>
-            <p>
-              Line numbers on the left refer to the original text; numbers on
-              the right refer to the modified text. No external dependencies
-              — the diff runs entirely in your browser.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Diff">
+          <p>
+            Compare two texts line by line using the Longest Common
+            Subsequence (LCS) algorithm.
+          </p>
+          <p>
+            <span className="text-error">Red lines</span> were removed
+            from the original. <span className="text-success">Green lines</span>{" "}
+            were added in the modified version. Unchanged lines remain in
+            the default color.
+          </p>
+          <p>
+            Line numbers on the left refer to the original text; numbers on
+            the right refer to the modified text. No external dependencies
+            — the diff runs entirely in your browser.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

@@ -86,10 +86,30 @@ export function generateUUIDv1(): string {
   return formatUUID(bytes);
 }
 
+// RFC 9562 §6.2 method 1: a 12-bit counter in rand_a keeps v7 UUIDs sortable within the same millisecond
+let lastV7Ms = -1;
+let v7Counter = 0;
+
 export function generateUUIDv7(): string {
   const bytes = randomBytes(16);
 
-  const now = Date.now();
+  let now = Date.now();
+  if (now <= lastV7Ms) {
+    now = lastV7Ms;
+    v7Counter++;
+    if (v7Counter > 0xfff) {
+      // Counter exhausted: borrow the next millisecond
+      now = ++lastV7Ms;
+      v7Counter = bytes[7] & 0x3ff;
+    }
+  } else {
+    // Seed with headroom so increments rarely overflow
+    v7Counter = ((bytes[6] & 0x01) << 8) | bytes[7];
+  }
+  lastV7Ms = now;
+  bytes[6] = (v7Counter >> 8) & 0x0f;
+  bytes[7] = v7Counter & 0xff;
+
   bytes[0] = (now / 2 ** 40) & 0xff;
   bytes[1] = (now / 2 ** 32) & 0xff;
   bytes[2] = (now / 2 ** 24) & 0xff;

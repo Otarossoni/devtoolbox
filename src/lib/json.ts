@@ -226,8 +226,16 @@ export function evaluateJSONPath(obj: unknown, path: string): { value: unknown; 
     const clean = path.replace(/^\$/, "").replace(/^\./, "");
     const segments = parsePathSegments(clean);
     let current = obj;
+    // After a wildcard, list or slice, the remaining segments apply to each element
+    let projected = false;
     for (const seg of segments) {
-      current = resolveSegment(current, seg);
+      if (projected) {
+        const results = (current as unknown[]).map((item) => resolveSegment(item, seg));
+        current = isProjection(seg) ? (results as unknown[][]).flat() : results;
+      } else {
+        current = resolveSegment(current, seg);
+        projected = isProjection(seg);
+      }
     }
     return { value: current, error: null };
   } catch (e) {
@@ -235,7 +243,14 @@ export function evaluateJSONPath(obj: unknown, path: string): { value: unknown; 
   }
 }
 
-type PathSegment = { type: "key"; key: string } | { type: "index"; indices: number[] } | { type: "wildcard" };
+type PathSegment =
+  | { type: "key"; key: string }
+  | { type: "index"; indices: number[]; slice: boolean }
+  | { type: "wildcard" };
+
+function isProjection(seg: PathSegment): boolean {
+  return seg.type === "wildcard" || (seg.type === "index" && (seg.slice || seg.indices.length !== 1));
+}
 
 function parsePathSegments(path: string): PathSegment[] {
   const segments: PathSegment[] = [];
@@ -250,9 +265,9 @@ function parsePathSegments(path: string): PathSegment[] {
         segments.push({ type: "wildcard" });
       } else if (content.includes(":")) {
         const [start, end_] = content.split(":").map(Number);
-        segments.push({ type: "index", indices: range(start, end_ || undefined) });
+        segments.push({ type: "index", indices: range(start, end_ || undefined), slice: true });
       } else {
-        segments.push({ type: "index", indices: content.split(",").map(Number) });
+        segments.push({ type: "index", indices: content.split(",").map(Number), slice: false });
       }
       i = end + 1;
     } else {
@@ -279,7 +294,7 @@ function resolveSegment(current: unknown, seg: PathSegment): unknown {
   if (seg.type === "index") {
     const arr = current as unknown[];
     if (!Array.isArray(arr)) throw new Error("Cannot index non-array");
-    if (seg.indices.length === 1) {
+    if (!seg.slice && seg.indices.length === 1) {
       const idx = seg.indices[0];
       if (idx < 0 || idx >= arr.length) throw new Error(`Index ${idx} out of bounds`);
       return arr[idx];

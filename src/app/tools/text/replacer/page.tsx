@@ -3,9 +3,13 @@
 import { useState, useCallback } from "react";
 import {
   RepeatIcon,
-  CopyIcon,
-  CheckIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard, FieldLabel, CardMeta } from "@/components/Card";
+import { TextField, TextArea, FieldError } from "@/components/Field";
+import Button, { ToggleChip } from "@/components/Button";
+import CopyButton from "@/components/CopyButton";
+import { Actions } from "@/components/Output";
 
 export default function TextReplacerPage() {
   const [text, setText] = useState("");
@@ -29,7 +33,8 @@ export default function TextReplacerPage() {
 
     if (useRegex) {
       try {
-        const regex = new RegExp(find, flagsStr + "g");
+        // Replace All is always global; avoid a duplicate "g" when the flag is already on
+        const regex = new RegExp(find, flagsStr.includes("g") ? flagsStr : flagsStr + "g");
         const matches = text.match(regex);
         setCount(matches ? matches.length : 0);
         setOutput(text.replace(regex, replace));
@@ -51,17 +56,15 @@ export default function TextReplacerPage() {
 
     if (useRegex) {
       try {
-        const regex = new RegExp(find, flagsStr);
-        const match = regex.exec(text);
-        if (!match) {
+        // Without "g", replace() touches only the first match and expands $1, $& like Replace All
+        const regex = new RegExp(find, flagsStr.replace("g", ""));
+        if (!regex.test(text)) {
           setCount(0);
           setOutput(text);
           return;
         }
         setCount(1);
-        setOutput(
-          text.slice(0, match.index) + replace + text.slice(match.index + match[0].length),
-        );
+        setOutput(text.replace(regex, replace));
       } catch (e) {
         setError((e as Error).message);
         return;
@@ -117,193 +120,121 @@ export default function TextReplacerPage() {
   }, [output]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <RepeatIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Text Replacer</h1>
-            <p className="text-sm text-neutral-500">
-              Find and replace text with plain or regex search
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={RepeatIcon}
+        title="Text Replacer"
+        description="Find and replace text with plain or regex search"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">
-              Text
-            </span>
-          </div>
-
-          <textarea
+      <CardStack>
+        <Card label="Text">
+          <TextArea
             value={text}
             onChange={(e) => handleTextChange(e.target.value)}
             placeholder="Type or paste text here..."
             rows={10}
-            className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200 resize-none"
           />
-        </div>
+        </Card>
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">
-              Search & Replace
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            <div>
-              <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">
-                Find
-              </label>
-              <input
+        <Card label="Search & Replace">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <FieldLabel htmlFor="replacer-find">Find</FieldLabel>
+              <TextField
+                id="replacer-find"
                 value={find}
                 onChange={(e) => handleFindChange(e.target.value)}
                 placeholder="Text or pattern..."
-                className={`w-full px-3 py-2 rounded-lg bg-black border text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none transition-colors duration-200 ${
-                  error
-                    ? "border-red-500/50"
-                    : "border-[#262626] focus:border-[#8A2BE2]"
-                }`}
+                invalid={!!error}
               />
             </div>
-            <div>
-              <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">
-                Replace with
-              </label>
-              <input
+            <div className="flex flex-col gap-2">
+              <FieldLabel htmlFor="replacer-replace">Replace with</FieldLabel>
+              <TextField
+                id="replacer-replace"
                 value={replace}
                 onChange={(e) => handleReplaceChange(e.target.value)}
                 placeholder="Replacement..."
-                className="w-full px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200"
               />
             </div>
           </div>
 
           {error && (
-            <p className="text-xs text-red-400 mb-3 font-mono">{error}</p>
+            <FieldError className="font-mono">{error}</FieldError>
           )}
 
-          <div className="flex items-center gap-3 mb-4">
-            <button
-              onClick={() => setUseRegex(!useRegex)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono transition-all duration-200 cursor-pointer border ${
-                useRegex
-                  ? "bg-[#8A2BE2]/10 text-[#8A2BE2] border-[#8A2BE2]"
-                  : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-              }`}
-            >
+          <div className="flex flex-wrap items-center gap-3">
+            <ToggleChip mono pressed={useRegex} onClick={() => setUseRegex(!useRegex)}>
               .* regex
-            </button>
-
+            </ToggleChip>
             {useRegex && (
               <div className="flex gap-1">
                 {["g", "i"].map((f) => (
-                  <button
+                  <ToggleChip
                     key={f}
+                    square
+                    mono
+                    aria-label={`Flag ${f}`}
+                    pressed={flags[f as keyof typeof flags]}
                     onClick={() =>
                       setFlags((prev) => ({
                         ...prev,
                         [f]: !prev[f as keyof typeof flags],
                       }))
                     }
-                    className={`w-7 h-7 rounded-md text-xs font-mono font-medium transition-all duration-200 cursor-pointer border ${
-                      flags[f as keyof typeof flags]
-                        ? "bg-[#8A2BE2]/10 text-[#8A2BE2] border-[#8A2BE2]"
-                        : "bg-[#171717] text-neutral-500 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-                    }`}
                   >
                     {f}
-                  </button>
+                  </ToggleChip>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleReplaceFirst}
-              disabled={!find}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-[#171717] text-neutral-400 border border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
-            >
+          <div className="flex flex-wrap gap-2">
+            <Button size="md" onClick={handleReplaceFirst} disabled={!find}>
               Replace First
-            </button>
-            <button
-              onClick={handleReplaceAll}
-              disabled={!find}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-[#8A2BE2] text-white hover:bg-[#7a1fd1] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
-            >
+            </Button>
+            <Button variant="primary" size="md" onClick={handleReplaceAll} disabled={!find}>
               Replace All
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
 
         {output && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                Result
-              </span>
-              <span className="text-xs text-neutral-600">
-                {count} replacement{count !== 1 ? "s" : ""}
-              </span>
-            </div>
-
-            <textarea
+          <Card
+            label="Result"
+            actions={<CardMeta>{count} replacement{count !== 1 ? "s" : ""}</CardMeta>}
+          >
+            <TextArea
               value={output}
               readOnly
               rows={10}
-              className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none resize-none"
+              aria-label="Result"
             />
-
-            <div className="flex items-center justify-end mt-4">
-              <button
-                onClick={handleCopy}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                  copied
-                    ? "bg-green-500/10 text-green-400 border-green-500/30"
-                    : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
-                }`}
-              >
-                {copied ? (
-                  <>
-                    <CheckIcon className="h-3.5 w-3.5" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon className="h-3.5 w-3.5" />
-                    Copy
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+            <Actions>
+              <CopyButton copied={copied} onClick={handleCopy} />
+            </Actions>
+          </Card>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Text Replacer</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              Find and replace text using plain string matching or regular
-              expressions with live result and replacement count.
-            </p>
-            <p>
-              <strong>Replace First</strong> — replaces only the first
-              occurrence. <strong>Replace All</strong> — replaces every match.
-            </p>
-            <p>
-              Enable <strong>regex</strong> to use regular expression patterns.
-              The <strong>g</strong> flag applies globally (always on for
-              Replace All), and <strong>i</strong> makes matching
-              case-insensitive.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Text Replacer">
+          <p>
+            Find and replace text using plain string matching or regular
+            expressions with live result and replacement count.
+          </p>
+          <p>
+            <strong>Replace First</strong> — replaces only the first
+            occurrence. <strong>Replace All</strong> — replaces every match.
+          </p>
+          <p>
+            Enable <strong>regex</strong> to use regular expression patterns.
+            The <strong>g</strong> flag applies globally (always on for
+            Replace All), and <strong>i</strong> makes matching
+            case-insensitive.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

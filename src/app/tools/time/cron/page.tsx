@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ClockIcon, CopyIcon, CheckIcon } from "@phosphor-icons/react/dist/ssr";
+import { ClockIcon } from "@phosphor-icons/react/dist/ssr";
 import cronstrue from "cronstrue";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard } from "@/components/Card";
+import { TextField, FieldError } from "@/components/Field";
+import { ToggleChip } from "@/components/Button";
+import CopyButton from "@/components/CopyButton";
 
 const FIELD_NAMES = ["Minute", "Hour", "Day of month", "Month", "Day of week"];
 
@@ -80,6 +85,9 @@ function fieldBreakdown(field: string, fieldIdx: number): string {
   return parts.join(", ");
 }
 
+/** Allowed [min, max] per field: minute, hour, day of month, month, day of week (0 and 7 = Sunday) */
+const FIELD_RANGES: [number, number][] = [[0, 59], [0, 23], [1, 31], [1, 12], [0, 7]];
+
 function validateCron(expr: string): string | null {
   const trimmed = expr.trim();
   if (!trimmed) return null;
@@ -88,10 +96,19 @@ function validateCron(expr: string): string | null {
   if (fields.length !== 5) return `Expected 5 fields, got ${fields.length}`;
 
   for (let i = 0; i < 5; i++) {
-    const re = /^[*]|[0-9]+(?:-[0-9]+)?(?:\/[0-9]+)?(?:,[0-9]+(?:-[0-9]+)?(?:\/[0-9]+)?)*$/;
+    const re = /^(?:\*|\d+(?:-\d+)?)(?:\/\d+)?(?:,(?:\*|\d+(?:-\d+)?)(?:\/\d+)?)*$/;
     if (!re.test(fields[i])) return `Invalid characters in "${fields[i]}" (field ${i + 1})`;
-  }
 
+    const [min, max] = FIELD_RANGES[i];
+    for (const part of fields[i].split(",")) {
+      const [range, step] = part.split("/");
+      if (step !== undefined && parseInt(step, 10) < 1) return `Step must be at least 1 in "${part}" (${FIELD_NAMES[i]})`;
+      if (range === "*") continue;
+      const [lo, hi = lo] = range.split("-").map(Number);
+      if (lo < min || hi > max) return `${FIELD_NAMES[i]} must be between ${min} and ${max}, got "${range}"`;
+      if (lo > hi) return `Invalid range "${range}" (${FIELD_NAMES[i]})`;
+    }
+  }
   return null;
 }
 
@@ -185,168 +202,131 @@ export default function CronParserPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <ClockIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Cron Expression Parser</h1>
-            <p className="text-sm text-neutral-500">
-              Parse cron expressions into human-readable descriptions
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={ClockIcon}
+        title="Cron Expression Parser"
+        description="Parse cron expressions into human-readable descriptions"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">Expression</span>
-          </div>
-
-          <div className="flex gap-2 mb-3">
-            <input
+      <CardStack>
+        <Card label="Expression">
+          <div className="flex gap-2">
+            <TextField
               type="text"
+              aria-label="Cron expression"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="e.g. */15 * * * * or 0 9 * * 1-5"
-              className={`flex-1 px-4 py-2.5 rounded-lg bg-black border text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none transition-colors duration-200 ${
-                input && error ? "border-red-500/50" : "border-[#262626] focus:border-[#8A2BE2]"
-              }`}
+              invalid={!!input && !!error}
             />
-            <button
+            <CopyButton
+              variant="icon"
+              copied={copied}
               onClick={handleCopy}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                copied
-                  ? "bg-green-500/10 text-green-400 border-green-500/30"
-                  : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
-              }`}
-            >
-              {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
-            </button>
+              className="size-control! rounded-control! bg-surface-elevated"
+            />
           </div>
-
           {error && (
-            <p className="text-xs text-red-400 mb-3 font-mono">{error}</p>
+            <FieldError className="font-mono">{error}</FieldError>
           )}
-
           <div className="flex flex-wrap gap-1.5">
             {PRESETS.map((p) => (
-              <button
+              <ToggleChip
                 key={p.value}
+                mono
+                pressed={input === p.value}
                 onClick={() => setInput(p.value)}
-                className={`px-2.5 py-1 rounded-md text-[10px] font-mono transition-all duration-200 cursor-pointer border ${
-                  input === p.value
-                    ? "bg-[#8A2BE2]/10 text-[#8A2BE2] border-[#8A2BE2]"
-                    : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-                }`}
               >
                 {p.label}
-              </button>
+              </ToggleChip>
             ))}
           </div>
-        </div>
+        </Card>
 
         {description && (
-          <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">Description</span>
-            </div>
-
-            <p className="text-sm font-mono text-[#ededed]">{description}</p>
-          </div>
+          <Card label="Description">
+            <p className="font-mono text-sm text-fg">{description}</p>
+          </Card>
         )}
 
         {breakdown && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">Field Breakdown</span>
-            </div>
-
-            <div className="overflow-x-auto -mx-2 px-2">
-              <table className="w-full border-collapse">
+          <Card label="Field Breakdown">
+            <div className="overflow-x-auto">
+              <table className="w-full border-separate border-spacing-0">
                 <thead>
-                  <tr className="border-b border-[#262626]">
-                    <th className="px-2 py-2 text-left text-[10px] text-neutral-600 uppercase tracking-wider font-medium">Field</th>
-                    <th className="px-2 py-2 text-left text-[10px] text-neutral-600 uppercase tracking-wider font-medium">Value</th>
-                    <th className="px-2 py-2 text-left text-[10px] text-neutral-600 uppercase tracking-wider font-medium">Meaning</th>
+                  <tr>
+                    <th className="px-2.5 pb-2 text-left text-xs font-semibold text-fg-tertiary">Field</th>
+                    <th className="px-2.5 pb-2 text-left text-xs font-semibold text-fg-tertiary">Value</th>
+                    <th className="px-2.5 pb-2 text-left text-xs font-semibold text-fg-tertiary">Meaning</th>
                   </tr>
                 </thead>
                 <tbody>
                   {breakdown.map((b) => (
-                    <tr key={b.field} className="border-b border-[#262626]/50">
-                      <td className="px-2 py-2 text-xs text-neutral-400 whitespace-nowrap">{b.field}</td>
-                      <td className="px-2 py-2 text-xs font-mono text-[#8A2BE2] whitespace-nowrap">{b.value}</td>
-                      <td className="px-2 py-2 text-xs text-neutral-300">{b.meaning}</td>
+                    <tr key={b.field} className="even:bg-row-stripe">
+                      <td className="h-control rounded-l-segment px-2.5 text-[13px] whitespace-nowrap text-fg-secondary">{b.field}</td>
+                      <td className="px-2.5 font-mono text-[13px] whitespace-nowrap text-accent">{b.value}</td>
+                      <td className="rounded-r-segment px-2.5 text-[13px] text-fg">{b.meaning}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         )}
 
         {nextRuns && nextRuns.length > 0 && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">Next Executions</span>
-            </div>
-
+          <Card label="Next Executions">
             <div className="space-y-1.5">
               {nextRuns.map((d, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="text-[10px] font-mono text-neutral-600 w-4">{i + 1}</span>
-                  <span className="text-xs font-mono text-[#ededed]">{formatDate(d)}</span>
+                  <span className="w-4 font-mono text-xs text-fg-tertiary">{i + 1}</span>
+                  <span className="font-mono text-[13px] text-fg">{formatDate(d)}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Cron Expressions</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              A cron expression is a string of five fields separated by spaces
-              that defines a schedule for recurring tasks:
-            </p>
-
-            <div className="font-mono text-xs text-[#ededed] bg-[#171717] rounded-lg p-3 border border-[#262626] space-y-0.5">
-              <div className="flex gap-4 flex-wrap">
-                <span className="text-[#8A2BE2]">* * * * *</span>
-              </div>
-              <div className="flex gap-4 flex-wrap text-neutral-500">
-                <span>│ │ │ │ │</span>
-              </div>
-              <div className="flex gap-4 flex-wrap text-neutral-500">
-                <span>│ │ │ │ └─ Day of week (0–7)</span>
-              </div>
-              <div className="flex gap-4 flex-wrap text-neutral-500">
-                <span>│ │ │ └─── Month (1–12)</span>
-              </div>
-              <div className="flex gap-4 flex-wrap text-neutral-500">
-                <span>│ │ └───── Day of month (1–31)</span>
-              </div>
-              <div className="flex gap-4 flex-wrap text-neutral-500">
-                <span>│ └─────── Hour (0–23)</span>
-              </div>
-              <div className="flex gap-4 flex-wrap text-neutral-500">
-                <span>└───────── Minute (0–59)</span>
-              </div>
+        <AboutCard title="About Cron Expressions">
+          <p>
+            A cron expression is a string of five fields separated by spaces
+            that defines a schedule for recurring tasks:
+          </p>
+          <div className="space-y-0.5 overflow-x-auto rounded-control bg-field p-3 font-mono text-xs text-fg-secondary">
+            <div className="flex flex-wrap gap-4">
+              <span className="text-accent">* * * * *</span>
             </div>
-
-            <p>
-              <strong>Special characters:</strong>{" "}
-              <code className="text-xs text-neutral-500">*</code> any value,{" "}
-              <code className="text-xs text-neutral-500">,</code> list separator,{" "}
-              <code className="text-xs text-neutral-500">-</code> range,{" "}
-              <code className="text-xs text-neutral-500">/</code> step.
-              Day of week: 0 and 7 both represent Sunday. If both day-of-month
-              and day-of-week are specified, either match is sufficient.
-            </p>
+            <div className="flex flex-wrap gap-4">
+              <span>│ │ │ │ │</span>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <span>│ │ │ │ └─ Day of week (0–7)</span>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <span>│ │ │ └─── Month (1–12)</span>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <span>│ │ └───── Day of month (1–31)</span>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <span>│ └─────── Hour (0–23)</span>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <span>└───────── Minute (0–59)</span>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+          <p>
+            <strong>Special characters:</strong>{" "}
+            <code>*</code> any value,{" "}
+            <code>,</code> list separator,{" "}
+            <code>-</code> range,{" "}
+            <code>/</code> step.
+            Day of week: 0 and 7 both represent Sunday. If both day-of-month
+            and day-of-week are specified, either match is sufficient.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

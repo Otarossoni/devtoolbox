@@ -3,10 +3,15 @@
 import { useState, useCallback } from "react";
 import {
   TextTIcon,
-  CopyIcon,
-  CheckIcon,
   DownloadSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard, FieldLabel } from "@/components/Card";
+import { TextField, TextArea } from "@/components/Field";
+import SegmentedControl from "@/components/SegmentedControl";
+import Button from "@/components/Button";
+import CopyButton from "@/components/CopyButton";
+import { Actions } from "@/components/Output";
 
 const SENTENCES = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
@@ -47,10 +52,13 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+/** The corpus has entries with more than one sentence; split them so counts are exact */
+const SINGLE_SENTENCES = SENTENCES.flatMap((s) => s.match(/[^.!?]+[.!?]/g)?.map((x) => x.trim()) ?? [s]);
+
 function generateSentences(count: number): string {
   const out: string[] = [];
   for (let i = 0; i < count; i++) {
-    out.push(pickRandom(SENTENCES));
+    out.push(pickRandom(SINGLE_SENTENCES));
   }
   return out.join(" ");
 }
@@ -142,54 +150,31 @@ export default function LoremIpsumPage() {
   ];
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <TextTIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Lorem Ipsum</h1>
-            <p className="text-sm text-neutral-500">
-              Generate placeholder text for designs and mockups
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={TextTIcon}
+        title="Lorem Ipsum"
+        description="Generate placeholder text for designs and mockups"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">
-              Options
-            </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {types.map((t) => (
-              <button
-                key={t.value}
-                onClick={() => {
-                  setLoremType(t.value);
-                  setGenerated(false);
-                  setCount(t.value === "words" ? 20 : 3);
-                }}
-                className={`flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-all duration-200 cursor-pointer border ${
-                  loremType === t.value
-                    ? "bg-[#8A2BE2]/10 text-[#8A2BE2] border-[#8A2BE2]"
-                    : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-                }`}
-              >
-                <span className="text-sm font-medium">{t.label}</span>
-                <span className="text-[10px] text-neutral-600">{t.hint}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="flex gap-2 items-end">
-            <div className="flex-1">
-              <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">
-                Count
-              </label>
-              <input
+      <CardStack>
+        <Card label="Options">
+          <SegmentedControl
+            ariaLabel="Type"
+            layout="grid"
+            value={loremType}
+            onChange={(v) => {
+              setLoremType(v);
+              setGenerated(false);
+              setCount(v === "words" ? 20 : 3);
+            }}
+            options={types.map((t) => ({ value: t.value, label: t.label, hint: t.hint }))}
+          />
+          <div className="flex items-end gap-2">
+            <div className="flex flex-1 flex-col gap-2">
+              <FieldLabel htmlFor="lorem-count">Count</FieldLabel>
+              <TextField
+                id="lorem-count"
                 type="number"
                 value={count}
                 onChange={(e) => {
@@ -198,88 +183,53 @@ export default function LoremIpsumPage() {
                 }}
                 min={1}
                 max={100}
-                className="w-full px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none focus:border-[#8A2BE2] transition-colors duration-200"
               />
             </div>
-            <button
-              onClick={handleGenerate}
-              className="px-6 py-2 rounded-lg text-sm font-medium bg-[#8A2BE2] text-white hover:bg-[#7a1fd1] transition-all duration-200 cursor-pointer"
-            >
+            <Button variant="primary" size="md" onClick={handleGenerate}>
               Generate
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
 
         {generated && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                Output
-              </span>
-            </div>
-
-            <textarea
+          <Card label="Output">
+            <TextArea
               value={output}
               readOnly
               rows={10}
-              className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm text-[#ededed] outline-none resize-none leading-relaxed"
+              mono={false}
+              aria-label="Output"
+              className="leading-relaxed!"
             />
-
-            <div className="flex items-center justify-end gap-2 mt-4">
-              <button
-                onClick={handleCopy}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                  copied
-                    ? "bg-green-500/10 text-green-400 border-green-500/30"
-                    : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
-                }`}
-              >
-                {copied ? (
-                  <>
-                    <CheckIcon className="h-3.5 w-3.5" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon className="h-3.5 w-3.5" />
-                    Copy
-                  </>
-                )}
-              </button>
-              <button
-                onClick={handleDownload}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-[#171717] text-neutral-400 border border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30 transition-all duration-200 cursor-pointer"
-              >
-                <DownloadSimpleIcon className="h-3.5 w-3.5" />
+            <Actions>
+              <CopyButton copied={copied} onClick={handleCopy} />
+              <Button icon={DownloadSimpleIcon} onClick={handleDownload}>
                 Download .txt
-              </button>
-            </div>
-          </div>
+              </Button>
+            </Actions>
+          </Card>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Lorem Ipsum</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              Lorem Ipsum is the standard placeholder text in design, publishing,
-              and web development since the 1500s. It approximates natural
-              language without readable content, keeping the focus on layout.
-            </p>
-            <p>
-              <strong>Paragraphs</strong> — blocks of 3–7 sentences each,
-              separated by blank lines.{" "}
-              <strong>Sentences</strong> — individual sentences from the
-              expanded Lorem Ipsum corpus.{" "}
-              <strong>Words</strong> — random individual words in Latin style.
-            </p>
-            <p>
-              Click <strong>Generate</strong> to create new text,{" "}
-              <strong>Copy</strong> to clipboard, or{" "}
-              <strong>Download .txt</strong> to save as a file.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Lorem Ipsum">
+          <p>
+            Lorem Ipsum is the standard placeholder text in design, publishing,
+            and web development since the 1500s. It approximates natural
+            language without readable content, keeping the focus on layout.
+          </p>
+          <p>
+            <strong>Paragraphs</strong> — blocks of 3–7 sentences each,
+            separated by blank lines.{" "}
+            <strong>Sentences</strong> — individual sentences from the
+            expanded Lorem Ipsum corpus.{" "}
+            <strong>Words</strong> — random individual words in Latin style.
+          </p>
+          <p>
+            Click <strong>Generate</strong> to create new text,{" "}
+            <strong>Copy</strong> to clipboard, or{" "}
+            <strong>Download .txt</strong> to save as a file.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

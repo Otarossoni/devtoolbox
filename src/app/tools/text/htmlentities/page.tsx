@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { BracketsAngleIcon, CopyIcon, CheckIcon } from "@phosphor-icons/react/dist/ssr";
+import { BracketsAngleIcon } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard } from "@/components/Card";
+import { TextArea } from "@/components/Field";
+import SegmentedControl from "@/components/SegmentedControl";
+import { ToggleChip } from "@/components/Button";
+import CopyButton from "@/components/CopyButton";
+import { Actions } from "@/components/Output";
 
 type EncMode = "encode" | "decode";
 
@@ -13,7 +20,7 @@ function encodeEntities(text: string, encodeNonAscii: boolean): string {
   result = result.replace(/'/g, "&#39;");
 
   if (encodeNonAscii) {
-    result = result.replace(/[^\x00-\x7F]/g, (ch) => {
+    result = result.replace(/[^\x00-\x7F]/gu, (ch) => {
       return `&#x${ch.codePointAt(0)?.toString(16).toUpperCase()};`;
     });
   }
@@ -55,61 +62,39 @@ export default function HtmlEntitiesPage() {
   }, [output]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <BracketsAngleIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">HTML Entities</h1>
-            <p className="text-sm text-neutral-500">
-              Encode and decode HTML entities
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={BracketsAngleIcon}
+        title="HTML Entities"
+        description="Encode and decode HTML entities"
+      />
 
-        <div className="animate-5 flex gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setMode("encode")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "encode"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            Encode
-          </button>
-          <button
-            onClick={() => setMode("decode")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "decode"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            Decode
-          </button>
-        </div>
+      <CardStack>
+        <SegmentedControl
+          ariaLabel="Mode"
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "encode", label: "Encode" },
+            { value: "decode", label: "Decode" },
+          ]}
+        />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">Input</span>
-            {mode === "encode" && (
-              <button
+        <Card
+          label="Input"
+          actions={
+            mode === "encode" ? (
+              <ToggleChip
+                mono
+                pressed={encodeNonAscii}
                 onClick={() => setEncodeNonAscii(!encodeNonAscii)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] font-mono transition-all duration-200 cursor-pointer border ${
-                  encodeNonAscii
-                    ? "bg-[#8A2BE2]/10 text-[#8A2BE2] border-[#8A2BE2]"
-                    : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-                }`}
               >
                 {encodeNonAscii ? "Emoji → hex" : "Emoji as-is"}
-              </button>
-            )}
-          </div>
-
-          <textarea
+              </ToggleChip>
+            ) : undefined
+          }
+        >
+          <TextArea
             value={input}
             onChange={(e) => {
               if (mode === "encode") setEncodeInput(e.target.value);
@@ -121,74 +106,46 @@ export default function HtmlEntitiesPage() {
                 : "Paste HTML entities to decode...\ne.g. &lt;div&gt;Hello &amp; welcome&lt;/div&gt;"
             }
             rows={6}
-            className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200 resize-none"
           />
-        </div>
+        </Card>
 
         {output && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">Output</span>
-            </div>
-
-            <textarea
+          <Card label="Output">
+            <TextArea
               value={output}
               readOnly
               rows={6}
-              className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none resize-none"
+              aria-label="Output"
             />
-
-            <div className="flex items-center justify-end mt-4">
-              <button
-                onClick={handleCopy}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                  copied
-                    ? "bg-green-500/10 text-green-400 border-green-500/30"
-                    : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
-                }`}
-              >
-                {copied ? (
-                  <>
-                    <CheckIcon className="h-3.5 w-3.5" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon className="h-3.5 w-3.5" />
-                    Copy
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+            <Actions>
+              <CopyButton copied={copied} onClick={handleCopy} />
+            </Actions>
+          </Card>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About HTML Entities</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              HTML entities allow you to safely represent reserved characters
-              in HTML. For example, <code className="text-xs text-neutral-500">&lt;</code>{" "}
-              is represented as <code className="text-xs text-neutral-500">&amp;lt;</code>{" "}
-              to avoid being interpreted as a tag opener.
-            </p>
-            <p>
-              <strong>Encode</strong> replaces <code className="text-xs text-neutral-500">&amp;</code>{" "}
-              (first), <code className="text-xs text-neutral-500">&lt;</code>,{" "}
-              <code className="text-xs text-neutral-500">&gt;</code>,{" "}
-              <code className="text-xs text-neutral-500">&quot;</code>, and{" "}
-              <code className="text-xs text-neutral-500">&#39;</code>. Toggle
-              &ldquo;Emoji → hex&rdquo; to also convert non-ASCII characters
-              like 😀 into <code className="text-xs text-neutral-500">&amp;#x1F600;</code>.
-            </p>
-            <p>
-              <strong>Decode</strong> uses the browser&rsquo;s native HTML
-              parser to safely decode all named and numeric entities back to
-              their original characters.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About HTML Entities">
+          <p>
+            HTML entities allow you to safely represent reserved characters
+            in HTML. For example, <code>&lt;</code>{" "}
+            is represented as <code>&amp;lt;</code>{" "}
+            to avoid being interpreted as a tag opener.
+          </p>
+          <p>
+            <strong>Encode</strong> replaces <code>&amp;</code>{" "}
+            (first), <code>&lt;</code>,{" "}
+            <code>&gt;</code>,{" "}
+            <code>&quot;</code>, and{" "}
+            <code>&#39;</code>. Toggle
+            &ldquo;Emoji → hex&rdquo; to also convert non-ASCII characters
+            like 😀 into <code>&amp;#x1F600;</code>.
+          </p>
+          <p>
+            <strong>Decode</strong> uses the browser&rsquo;s native HTML
+            parser to safely decode all named and numeric entities back to
+            their original characters.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

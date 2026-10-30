@@ -3,17 +3,25 @@
 import { useState, useCallback, useMemo } from "react";
 import {
   ArrowsLeftRightIcon,
-  CopyIcon,
-  CheckIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard } from "@/components/Card";
+import { TextArea } from "@/components/Field";
+import SegmentedControl from "@/components/SegmentedControl";
+import { ToggleChip } from "@/components/Button";
+import CopyButton from "@/components/CopyButton";
+import { Actions } from "@/components/Output";
 
 type EncMode = "encode" | "decode";
 
 export default function URLEncoderPage() {
   const [mode, setMode] = useState<EncMode>("encode");
-  const [input, setInput] = useState("");
+  const [encodeInput, setEncodeInput] = useState("");
+  const [decodeInput, setDecodeInput] = useState("");
   const [encodeAll, setEncodeAll] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const input = mode === "encode" ? encodeInput : decodeInput;
 
   const output = useMemo(() => {
     if (!input.trim()) return "";
@@ -47,125 +55,75 @@ export default function URLEncoderPage() {
   }, [output]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <ArrowsLeftRightIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">URL Encoder / Decoder</h1>
-            <p className="text-sm text-neutral-500">
-              Encode and decode URL components
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={ArrowsLeftRightIcon}
+        title="URL Encoder / Decoder"
+        description="Encode and decode URL components"
+      />
 
-        <div className="animate-5 flex gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setMode("encode")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "encode"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            Encode
-          </button>
-          <button
-            onClick={() => setMode("decode")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "decode"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            Decode
-          </button>
-        </div>
+      <CardStack>
+        <SegmentedControl
+          ariaLabel="Mode"
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "encode", label: "Encode" },
+            { value: "decode", label: "Decode" },
+          ]}
+        />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">Input</span>
-            <button
-              onClick={() => setEncodeAll(!encodeAll)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono transition-all duration-200 cursor-pointer border ${
-                encodeAll
-                  ? "bg-[#8A2BE2]/10 text-[#8A2BE2] border-[#8A2BE2]"
-                  : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-              }`}
-            >
+        <Card
+          label="Input"
+          actions={
+            <ToggleChip mono pressed={encodeAll} onClick={() => setEncodeAll(!encodeAll)}>
               {encodeAll ? "Full" : "URL-safe"}
-            </button>
-          </div>
-
-          <textarea
+            </ToggleChip>
+          }
+        >
+          <TextArea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) =>
+              mode === "encode"
+                ? setEncodeInput(e.target.value)
+                : setDecodeInput(e.target.value)
+            }
             placeholder={
               mode === "encode"
                 ? "Type text to encode...\ne.g. hello world & more"
                 : "Paste encoded string to decode...\ne.g. hello%20world%20%26%20more"
             }
             rows={6}
-            className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200 resize-none"
           />
-        </div>
+        </Card>
 
         {output && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">Output</span>
-            </div>
-
-            <textarea
+          <Card label="Output">
+            <TextArea
               value={output}
               readOnly
               rows={6}
-              className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none resize-none"
+              aria-label="Output"
             />
-
-            <div className="flex items-center justify-end mt-4">
-              <button
-                onClick={handleCopy}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                  copied
-                    ? "bg-green-500/10 text-green-400 border-green-500/30"
-                    : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
-                }`}
-              >
-                {copied ? (
-                  <>
-                    <CheckIcon className="h-3.5 w-3.5" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon className="h-3.5 w-3.5" />
-                    Copy
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+            <Actions>
+              <CopyButton copied={copied} onClick={handleCopy} />
+            </Actions>
+          </Card>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About URL Encoding</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              <strong>Full</strong> — uses <code className="text-xs text-neutral-500">encodeURIComponent</code>, encodes all special
-              characters including slashes and ampersands. Ideal for query
-              string values and form data.
-            </p>
-            <p>
-              <strong>URL-safe</strong> — uses <code className="text-xs text-neutral-500">encodeURI</code>, preserves URL structure
-              characters like <code className="text-xs text-neutral-500">/ ? & #</code>. Useful when you want
-              a readable URL with special characters only in the query values.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About URL Encoding">
+          <p>
+            <strong>Full</strong> — uses <code>encodeURIComponent</code>, encodes all special
+            characters including slashes and ampersands. Ideal for query
+            string values and form data.
+          </p>
+          <p>
+            <strong>URL-safe</strong> — uses <code>encodeURI</code>, preserves URL structure
+            characters like <code>/ ? & #</code>. Useful when you want
+            a readable URL with special characters only in the query values.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

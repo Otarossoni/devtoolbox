@@ -4,35 +4,45 @@ import { useState, useCallback, useRef } from "react";
 import {
   LockKeyIcon,
   LockKeyOpenIcon,
-  CopyIcon,
-  CheckIcon,
   DownloadSimpleIcon,
   ImageIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard, FieldLabel } from "@/components/Card";
+import { TextArea } from "@/components/Field";
+import SegmentedControl from "@/components/SegmentedControl";
+import Button from "@/components/Button";
+import CopyButton from "@/components/CopyButton";
+import DropZone from "@/components/DropZone";
+import { OutputBox, Actions } from "@/components/Output";
 
 type Mode = "encode" | "decode";
 
 export default function Base64ImagePage() {
   const [mode, setMode] = useState<Mode>("encode");
-  const [base64, setBase64] = useState("");
-  const [imageSrc, setImageSrc] = useState("");
-  const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [fileName, setFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Each mode keeps its own state so switching modes preserves input
+  const [fileName, setFileName] = useState("");
+  const [encodedBase64, setEncodedBase64] = useState("");
+  const [decodeInput, setDecodeInput] = useState("");
+  const [decodedSrc, setDecodedSrc] = useState("");
+  const [decodeError, setDecodeError] = useState(false);
+
+  const base64 = mode === "encode" ? encodedBase64 : decodeInput;
+  const imageSrc = mode === "encode" ? encodedBase64 : decodedSrc;
+  const error = mode === "decode" && decodeError;
 
   // ---- Encode: file upload ----
 
   const processFile = useCallback((file: File) => {
     setFileName(file.name);
-    setError(false);
 
     const reader = new FileReader();
     reader.onload = () => {
-      const dataUrl = reader.result as string;
-      setBase64(dataUrl);
-      setImageSrc(dataUrl);
+      setEncodedBase64(reader.result as string);
     };
     reader.readAsDataURL(file);
   }, []);
@@ -71,12 +81,12 @@ export default function Base64ImagePage() {
   const handleDecodeInput = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
-      setBase64(value);
+      setDecodeInput(value);
 
       const trimmed = value.trim();
       if (!trimmed) {
-        setImageSrc("");
-        setError(false);
+        setDecodedSrc("");
+        setDecodeError(false);
         return;
       }
 
@@ -86,12 +96,12 @@ export default function Base64ImagePage() {
 
       const img = new Image();
       img.onload = () => {
-        setImageSrc(src);
-        setError(false);
+        setDecodedSrc(src);
+        setDecodeError(false);
       };
       img.onerror = () => {
-        setImageSrc("");
-        setError(true);
+        setDecodedSrc("");
+        setDecodeError(true);
       };
       img.src = src;
     },
@@ -102,11 +112,7 @@ export default function Base64ImagePage() {
 
   const handleModeChange = useCallback((m: Mode) => {
     setMode(m);
-    setBase64("");
-    setImageSrc("");
-    setError(false);
     setCopied(false);
-    setFileName("");
   }, []);
 
   const handleCopy = useCallback(async () => {
@@ -126,98 +132,48 @@ export default function Base64ImagePage() {
   }, [base64]);
 
   const handleDownload = useCallback(() => {
-    if (!imageSrc) return;
+    if (!decodedSrc) return;
     const a = document.createElement("a");
-    a.href = imageSrc;
-    if (fileName) {
-      a.download = fileName;
-    } else {
-    const mimeMatch = imageSrc.match(/^data:(image\/\w+)/);
+    a.href = decodedSrc;
+    const mimeMatch = decodedSrc.match(/^data:(image\/\w+)/);
     const ext = mimeMatch ? mimeMatch[1].split("/")[1] : "png";
     a.download = `image.${ext}`;
-    }
     a.click();
-  }, [imageSrc, fileName]);
+  }, [decodedSrc]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <ImageIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Base64 Image</h1>
-            <p className="text-sm text-neutral-500">
-              Encode images to Base64 and decode them back
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={ImageIcon}
+        title="Base64 Image"
+        description="Encode images to Base64 and decode them back"
+      />
 
-        <div className="animate-5 flex gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => handleModeChange("encode")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "encode"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            <LockKeyIcon className="h-4 w-4" />
-            Encode
-          </button>
-          <button
-            onClick={() => handleModeChange("decode")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "decode"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            <LockKeyOpenIcon className="h-4 w-4" />
-            Decode
-          </button>
-        </div>
+      <CardStack>
+        <SegmentedControl
+          ariaLabel="Mode"
+          value={mode}
+          onChange={handleModeChange}
+          options={[
+            { value: "encode", label: "Encode", icon: LockKeyIcon },
+            { value: "decode", label: "Decode", icon: LockKeyOpenIcon },
+          ]}
+        />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
+        <Card label={mode === "encode" ? "Upload" : "Base64 Input"}>
           {mode === "encode" ? (
             <>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                  Upload
-                </span>
-              </div>
-
-              <div
+              <DropZone
+                isDragging={isDragging}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onClick={() => fileInputRef.current?.click()}
-                className={`flex flex-col items-center justify-center gap-3 p-8 rounded-lg border-2 border-dashed transition-colors duration-200 cursor-pointer min-h-[120px] ${
-                  isDragging
-                    ? "border-[#8A2BE2] bg-[#8A2BE2]/5"
-                    : "border-[#262626] hover:border-[#3a3a3a]"
-                }`}
-              >
-                {fileName ? (
-                  <>
-                    <ImageIcon className="h-8 w-8 text-[#8A2BE2]" />
-                    <span className="text-sm text-[#ededed] font-mono">
-                      {fileName}
-                    </span>
-                    <span className="text-xs text-neutral-500">
-                      Click or drop to change
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="h-8 w-8 text-neutral-600" />
-                    <span className="text-sm text-neutral-500">
-                      Drop an image here or click to browse
-                    </span>
-                  </>
-                )}
-              </div>
+                icon={ImageIcon}
+                loaded={!!fileName}
+                title={fileName || "Drop an image here or click to browse"}
+                meta={fileName ? "Click or drop to change" : undefined}
+              />
 
               <input
                 ref={fileInputRef}
@@ -228,40 +184,25 @@ export default function Base64ImagePage() {
               />
             </>
           ) : (
-            <>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                  Base64 Input
-                </span>
-              </div>
-
-              <textarea
-                value={base64}
-                onChange={handleDecodeInput}
-                placeholder="Paste a Base64 image string..."
-                rows={3}
-                className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200 resize-none"
-              />
-            </>
+            <TextArea
+              value={base64}
+              onChange={handleDecodeInput}
+              placeholder="Paste a Base64 image string..."
+              rows={3}
+            />
           )}
 
           {(imageSrc || error) && (
-            <div className="mt-4">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                  Preview
-                </span>
-              </div>
+            <>
+              <FieldLabel>Preview</FieldLabel>
 
               <div
-                className={`flex items-center justify-center rounded-lg border min-h-[100px] p-2 ${
-                  error
-                    ? "border-red-500/30"
-                    : "border-[#262626]"
+                className={`flex min-h-[100px] items-center justify-center rounded-control p-2 ${
+                  error ? "bg-field-error" : "bg-field"
                 }`}
               >
                 {error ? (
-                  <span className="text-sm text-red-400">
+                  <span className="text-sm text-error">
                     {mode === "decode"
                       ? "Invalid Base64 image string"
                       : "Failed to process image"}
@@ -271,88 +212,58 @@ export default function Base64ImagePage() {
                   <img
                     src={imageSrc}
                     alt="Preview"
-                    className="max-w-full max-h-80 rounded object-contain"
+                    className="max-h-80 max-w-full rounded-inline object-contain"
                   />
                 )}
               </div>
-            </div>
+            </>
           )}
 
           {mode === "encode" && base64 && (
-            <div className="mt-4">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                  Result
-                </span>
-              </div>
+            <>
+              <FieldLabel>Result</FieldLabel>
 
-              <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-black border border-[#262626] min-h-14">
-                <code className="text-xs font-mono text-[#ededed] break-all select-all line-clamp-3">
+              <OutputBox>
+                <code className="line-clamp-3 font-mono text-xs break-all text-fg select-all">
                   {base64.substring(0, 200)}
                   {base64.length > 200 && "..."}
                 </code>
-              </div>
+              </OutputBox>
 
-              <div className="flex items-center justify-end mt-4">
-                <button
-                  onClick={handleCopy}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                    copied
-                      ? "bg-green-500/10 text-green-400 border-green-500/30"
-                      : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
-                  }`}
-                >
-                  {copied ? (
-                    <>
-                      <CheckIcon className="h-3.5 w-3.5" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <CopyIcon className="h-3.5 w-3.5" />
-                      Copy
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+              <Actions>
+                <CopyButton copied={copied} onClick={handleCopy} />
+              </Actions>
+            </>
           )}
 
           {mode === "decode" && imageSrc && (
-            <div className="flex items-center justify-end mt-4">
-              <button
-                onClick={handleDownload}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium bg-[#8A2BE2] text-white hover:bg-[#7a1fd1] transition-all duration-200 cursor-pointer"
-              >
-                <DownloadSimpleIcon className="h-3.5 w-3.5" />
+            <Actions>
+              <Button variant="primary" size="md" icon={DownloadSimpleIcon} onClick={handleDownload}>
                 Download
-              </button>
-            </div>
+              </Button>
+            </Actions>
           )}
-        </div>
+        </Card>
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Base64 Images</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              Base64 encoding converts binary image data into a text string
-              that can be embedded directly in HTML, CSS, or JSON. It is
-              commonly used for inline images in emails, data URIs, and
-              API payloads.
-            </p>
-            <p>
-              Encoding: upload an image to convert it into a <code className="text-xs text-neutral-500">data:image/...;base64,...</code>{" "}
-              string ready to use. The format is detected automatically from
-              the file.
-            </p>
-            <p>
-              Decoding: paste a Base64 image string to preview and download
-              the reconstructed image. Works with both raw Base64 and full
-              data URI strings.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Base64 Images">
+          <p>
+            Base64 encoding converts binary image data into a text string
+            that can be embedded directly in HTML, CSS, or JSON. It is
+            commonly used for inline images in emails, data URIs, and
+            API payloads.
+          </p>
+          <p>
+            Encoding: upload an image to convert it into a <code>data:image/...;base64,...</code>{" "}
+            string ready to use. The format is detected automatically from
+            the file.
+          </p>
+          <p>
+            Decoding: paste a Base64 image string to preview and download
+            the reconstructed image. Works with both raw Base64 and full
+            data URI strings.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

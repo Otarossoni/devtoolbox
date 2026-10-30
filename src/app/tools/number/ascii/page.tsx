@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { TableIcon, CopyIcon, CheckIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react/dist/ssr";
+import { TableIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard } from "@/components/Card";
+import { TextField } from "@/components/Field";
+import { IconButton } from "@/components/Button";
+import CopyButton from "@/components/CopyButton";
+import { ValueTile } from "@/components/ValueRow";
 
 interface AsciiEntry {
   dec: number;
@@ -104,16 +110,16 @@ const PRINTABLES = DATA.slice(32, 128);
 
 function rowTextColor(cat: AsciiEntry["category"]): string {
   switch (cat) {
-    case "control": return "text-neutral-600";
-    case "digit": return "text-green-400";
-    case "upper": return "text-[#8A2BE2]";
-    case "lower": return "text-sky-400";
-    default: return "text-neutral-300";
+    case "control": return "text-fg-tertiary";
+    case "digit": return "text-syntax-string";
+    case "upper": return "text-accent-text";
+    case "lower": return "text-syntax-number";
+    default: return "text-fg";
   }
 }
 
 function rowBg(selected: boolean): string {
-  return selected ? "bg-[#8A2BE2]/10 border-[#8A2BE2]/30" : "border-transparent hover:bg-[#171717] hover:border-[#262626]";
+  return selected ? "bg-accent-tint" : "even:bg-row-stripe hover:bg-surface-elevated";
 }
 
 export default function AsciiTablePage() {
@@ -122,13 +128,15 @@ export default function AsciiTablePage() {
 
   const filter = useCallback((list: AsciiEntry[]) => {
     if (!search.trim()) return list;
-    const q = search.toLowerCase();
+    const raw = search.trim();
+    const q = raw.toLowerCase();
+    const hexQ = q.replace(/^0x/, "");
     return list.filter((e) =>
       e.description.toLowerCase().includes(q) ||
       e.code.toLowerCase().includes(q) ||
-      e.char.includes(q) ||
+      e.char === raw ||
       e.dec.toString().includes(q) ||
-      e.hex.toLowerCase().includes(q) ||
+      (hexQ !== "" && e.hex.toLowerCase().includes(hexQ)) ||
       e.entity.includes(q)
     );
   }, [search]);
@@ -137,37 +145,32 @@ export default function AsciiTablePage() {
   const filteredPrintables = useMemo(() => filter(PRINTABLES), [filter]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <TableIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">ASCII Table</h1>
-            <p className="text-sm text-neutral-500">
-              Complete ASCII reference with character codes and descriptions
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={TableIcon}
+        title="ASCII Table"
+        description="Complete ASCII reference with character codes and descriptions"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="relative mb-6">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-600" />
-            <input
+      <CardStack>
+        <section className="flex flex-col gap-8 rounded-card bg-surface p-card-sm sm:p-card">
+          <div className="relative flex">
+            <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-fg-subtle" />
+            <TextField
               type="text"
+              aria-label="Search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by character, description, hex, decimal..."
-              className="w-full pl-9 pr-8 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200"
+              className="pr-11 pl-10"
             />
             {search && (
-              <button
+              <IconButton
+                icon={XIcon}
+                label="Clear search"
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-neutral-600 hover:text-[#ededed] transition-colors cursor-pointer"
-              >
-                <XIcon className="h-3.5 w-3.5" />
-              </button>
+                className="absolute top-0 right-0"
+              />
             )}
           </div>
 
@@ -179,10 +182,6 @@ export default function AsciiTablePage() {
             onSelect={setSelected}
           />
 
-          {filteredControls.length > 0 && filteredPrintables.length > 0 && (
-            <div className="border-t border-[#262626] my-6" />
-          )}
-
           <SectionTable
             title="Printable characters"
             subtitle="32–127"
@@ -190,38 +189,35 @@ export default function AsciiTablePage() {
             selected={selected}
             onSelect={setSelected}
           />
-        </div>
+        </section>
 
         {selected && (
           <DetailPanel entry={selected} onClose={() => setSelected(null)} />
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About ASCII Table</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              ASCII (American Standard Code for Information Interchange)
-              defines 128 characters numbered 0 through 127. Each row in the
-              table above shows every representation of a character: decimal,
-              octal, hexadecimal, 8-bit binary, the rendered symbol (or control
-              code abbreviation), HTML numeric entity, and a human-readable
-              description.
-            </p>
-            <p>
-              <strong>0–31 &amp; 127</strong> — Control characters for
-              terminals, printers, and communication protocols.{" "}
-              <strong>32–126</strong> — Printable characters: space,
-              punctuation, digits, uppercase and lowercase letters.
-            </p>
-            <p>
-              Click any row to expand a detail panel with copyable values
-              including Unicode code point and escape sequence. Use the
-              search bar to filter the table by any field.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About ASCII Table">
+          <p>
+            ASCII (American Standard Code for Information Interchange)
+            defines 128 characters numbered 0 through 127. Each row in the
+            table above shows every representation of a character: decimal,
+            octal, hexadecimal, 8-bit binary, the rendered symbol (or control
+            code abbreviation), HTML numeric entity, and a human-readable
+            description.
+          </p>
+          <p>
+            <strong>0–31 &amp; 127</strong> — Control characters for
+            terminals, printers, and communication protocols.{" "}
+            <strong>32–126</strong> — Printable characters: space,
+            punctuation, digits, uppercase and lowercase letters.
+          </p>
+          <p>
+            Click any row to expand a detail panel with copyable values
+            including Unicode code point and escape sequence. Use the
+            search bar to filter the table by any field.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }
 
@@ -240,18 +236,31 @@ function SectionTable({
 }) {
   if (entries.length === 0) return null;
 
+  const rowProps = (e: AsciiEntry, isSel: boolean) => ({
+    onClick: () => onSelect(isSel ? null : e),
+    onKeyDown: (ev: React.KeyboardEvent) => {
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        onSelect(isSel ? null : e);
+      }
+    },
+    tabIndex: 0,
+    "aria-selected": isSel,
+    className: `cursor-pointer transition-colors ${rowBg(isSel)}`,
+  });
+
   return (
-    <div>
-      <div className="flex items-baseline gap-2 mb-3">
-        <h3 className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">{title}</h3>
-        <span className="text-[10px] text-neutral-600 font-mono">{subtitle}</span>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-baseline gap-2">
+        <h3 className="text-sm font-semibold tracking-[-0.01em] text-fg">{title}</h3>
+        <span className="font-mono text-xs text-fg-tertiary">{subtitle}</span>
       </div>
 
-      <div className="overflow-x-auto -mx-2 px-2">
+      <div className="overflow-x-auto">
         {/* Desktop table */}
-        <table className="hidden sm:table w-full border-collapse">
+        <table className="hidden w-full border-separate border-spacing-0 text-[13px] sm:table">
           <thead>
-            <tr className="border-b border-[#262626]">
+            <tr>
               <Th>Dec</Th>
               <Th>Oct</Th>
               <Th>Hex</Th>
@@ -266,11 +275,7 @@ function SectionTable({
               const isSel = selected?.dec === e.dec;
               const isControl = e.category === "control";
               return (
-                <tr
-                  key={e.dec}
-                  onClick={() => onSelect(isSel ? null : e)}
-                  className={`border-b border-[#262626]/50 cursor-pointer transition-colors duration-150 ${rowBg(isSel)}`}
-                >
+                <tr key={e.dec} {...rowProps(e, isSel)}>
                   <Td mono highlight>{e.dec}</Td>
                   <Td mono dim>{e.oct}</Td>
                   <Td mono dim>0x{e.hex}</Td>
@@ -287,9 +292,9 @@ function SectionTable({
         </table>
 
         {/* Mobile table */}
-        <table className="sm:hidden w-full border-collapse">
+        <table className="w-full border-separate border-spacing-0 text-[13px] sm:hidden">
           <thead>
-            <tr className="border-b border-[#262626]">
+            <tr>
               <Th>Dec</Th>
               <Th>Hex</Th>
               <Th>Char</Th>
@@ -301,11 +306,7 @@ function SectionTable({
               const isSel = selected?.dec === e.dec;
               const isControl = e.category === "control";
               return (
-                <tr
-                  key={e.dec}
-                  onClick={() => onSelect(isSel ? null : e)}
-                  className={`border-b border-[#262626]/50 cursor-pointer transition-colors duration-150 ${rowBg(isSel)}`}
-                >
+                <tr key={e.dec} {...rowProps(e, isSel)}>
                   <Td mono highlight>{e.dec}</Td>
                   <Td mono dim>0x{e.hex}</Td>
                   <Td mono color={rowTextColor(e.category)}>
@@ -324,7 +325,7 @@ function SectionTable({
 
 function Th({ children }: { children: React.ReactNode }) {
   return (
-    <th className="px-2 py-2 text-left text-[10px] text-neutral-600 uppercase tracking-wider font-medium">
+    <th className="px-2.5 pb-2 text-left text-xs font-semibold text-fg-tertiary">
       {children}
     </th>
   );
@@ -351,12 +352,12 @@ function Td({
 }) {
   return (
     <td
-      className={`px-2 py-1.5 whitespace-nowrap ${
+      className={`h-control px-2.5 whitespace-nowrap first:rounded-l-segment last:rounded-r-segment ${
         mono ? "font-mono" : ""
       } ${
-        extraSmall ? "text-[10px]" : small ? "text-[11px]" : "text-xs"
+        extraSmall || small ? "text-xs" : "text-[13px]"
       } ${
-        dim ? "text-neutral-500" : highlight ? "text-neutral-200" : label ? "text-neutral-400" : color ?? "text-neutral-400"
+        dim ? "text-fg-secondary" : highlight ? "text-fg" : label ? "text-fg-secondary" : color ?? "text-fg-secondary"
       }`}
     >
       {children}
@@ -366,33 +367,27 @@ function Td({
 
 function DetailPanel({ entry, onClose }: { entry: AsciiEntry; onClose: () => void }) {
   const isControl = entry.category === "control";
-
   return (
-    <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <span className={`inline-flex items-center justify-center w-12 h-12 rounded-lg bg-[#171717] border border-[#262626] text-2xl font-mono ${rowTextColor(entry.category)}`}>
+    <Card>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3.5">
+          <span className={`inline-flex size-12 shrink-0 items-center justify-center rounded-control bg-surface-elevated font-mono text-[22px] ${rowTextColor(entry.category)}`}>
             {isControl ? entry.code : entry.char}
           </span>
-          <div>
-            <div className="text-sm font-semibold text-[#ededed]">
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <div className="text-[15px] font-semibold text-fg">
               {isControl ? entry.code : entry.char}
-              <span className="font-normal text-neutral-500 ml-2">— {entry.description}</span>
+              <span className="ml-2 font-normal text-fg-secondary">— {entry.description}</span>
             </div>
-            <div className="text-[10px] text-neutral-600 mt-0.5">
+            <div className="text-xs text-fg-secondary">
               U+{entry.hex.padStart(4, "0")} · {entry.category === "control" ? "Control character" : entry.category === "digit" ? "Digit" : entry.category === "upper" ? "Uppercase letter" : entry.category === "lower" ? "Lowercase letter" : "Symbol"}
             </div>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 rounded text-neutral-600 hover:text-neutral-400 transition-colors cursor-pointer"
-        >
-          <XIcon className="h-4 w-4" />
-        </button>
+        <IconButton icon={XIcon} label="Close" onClick={onClose} />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Cell label="Decimal" value={entry.dec.toString()} />
         <Cell label="Octal" value={`0o${entry.oct}`} />
         <Cell label="Hexadecimal" value={`0x${entry.hex}`} />
@@ -402,12 +397,13 @@ function DetailPanel({ entry, onClose }: { entry: AsciiEntry; onClose: () => voi
         {isControl && <Cell label="Escape" value={`\\x${entry.hex}`} />}
         <Cell label="Description" value={entry.description} />
       </div>
-    </div>
+    </Card>
   );
 }
 
 function Cell({ label, value, spaced = false }: { label: string; value: string; spaced?: boolean }) {
   const [copied, setCopied] = useState(false);
+
   const handleCopy = useCallback(async () => {
     try { await navigator.clipboard.writeText(value); } catch { /* fallback */ }
     setCopied(true);
@@ -415,19 +411,11 @@ function Cell({ label, value, spaced = false }: { label: string; value: string; 
   }, [value]);
 
   return (
-    <div className="p-3 rounded-lg bg-[#171717] border border-[#262626]">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] text-neutral-500 uppercase tracking-wider">{label}</span>
-        <button
-          onClick={handleCopy}
-          className={`shrink-0 p-0.5 rounded transition-colors duration-200 cursor-pointer ${copied ? "text-green-400" : "text-neutral-600 hover:text-[#8A2BE2]"}`}
-        >
-          {copied ? <CheckIcon className="h-3 w-3" /> : <CopyIcon className="h-3 w-3" />}
-        </button>
-      </div>
-      <code className={`block text-sm font-mono text-[#ededed] break-all ${spaced ? "tracking-[0.15em]" : ""}`}>
-        {value}
-      </code>
-    </div>
+    <ValueTile
+      label={label}
+      value={value}
+      valueClassName={spaced ? "tracking-[0.15em]" : ""}
+      action={<CopyButton variant="icon" copied={copied} onClick={handleCopy} label={`Copy ${label}`} />}
+    />
   );
 }

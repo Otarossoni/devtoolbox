@@ -3,17 +3,33 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   MarkdownLogoIcon,
-  CopyIcon,
-  CheckIcon,
   TextAlignLeftIcon,
   EyeIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard } from "@/components/Card";
+import { TextArea, Select } from "@/components/Field";
+import SegmentedControl from "@/components/SegmentedControl";
+import CopyButton from "@/components/CopyButton";
 
 function escapeHTML(text: string): string {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Allows http(s), mailto, image data URIs and relative URLs; anything else (javascript:, vbscript:…) becomes "#" */
+function safeUrl(url: string): string {
+  const decoded = url.replace(/&amp;/g, "&").replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim();
+  const scheme = decoded.match(/^([a-z][a-z0-9+.-]*):/i);
+  if (!scheme) return url;
+  const s = scheme[1].toLowerCase();
+  if (s === "http" || s === "https" || s === "mailto") return url;
+  if (s === "data" && /^data:image\/(png|jpe?g|gif|webp);/i.test(decoded)) return url;
+  return "#";
 }
 
 function renderMarkdown(md: string): string {
@@ -25,21 +41,21 @@ function renderMarkdown(md: string): string {
   text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) => {
     const i = protectedBlocks.length;
     const langClass = lang ? ` class="language-${lang}"` : "";
-    protectedBlocks.push(`<pre class="rounded-lg bg-black border border-[#262626] p-3 overflow-auto text-sm"><code${langClass}>${escapeHTML(code.trim())}</code></pre>`);
+    protectedBlocks.push(`<pre class="my-3 overflow-auto rounded-segment bg-surface px-3.5 py-3 font-mono text-[13px] leading-[1.6] text-fg"><code${langClass}>${escapeHTML(code.trim())}</code></pre>`);
     return `\x00B${i}\x00`;
   });
 
   // Inline code (`...`)
   text = text.replace(/`([^`]+)`/g, (_m, code) => {
     const i = protectedBlocks.length;
-    protectedBlocks.push(`<code class="bg-[#171717] text-[#CE9178] px-1 py-0.5 rounded text-sm font-mono">${escapeHTML(code)}</code>`);
+    protectedBlocks.push(`<code class="rounded-inline bg-surface-elevated px-1.5 py-0.5 font-mono text-[13px] text-syntax-string">${escapeHTML(code)}</code>`);
     return `\x00B${i}\x00`;
   });
 
   // Blockquotes
   text = text.replace(/^>\s?(.+)$/gm, (_m, content) => {
     const i = protectedBlocks.length;
-    protectedBlocks.push(`<blockquote class="border-l-2 border-[#8A2BE2] pl-3 my-2 text-neutral-400 italic">${content}</blockquote>`);
+    protectedBlocks.push(`<blockquote class="my-3 rounded-segment bg-accent-tint px-3.5 py-2.5 text-sm leading-[1.6] text-fg">${escapeHTML(content)}</blockquote>`);
     return `\x00B${i}\x00`;
   });
 
@@ -51,43 +67,43 @@ function renderMarkdown(md: string): string {
 
   // Phase 4: Markdown → HTML transformations
   // Headings
-  text = text.replace(/^###### (.+)$/gm, '<h6 class="text-xs font-semibold text-neutral-300 mt-4 mb-1">$1</h6>');
-  text = text.replace(/^##### (.+)$/gm, '<h5 class="text-sm font-semibold text-neutral-200 mt-4 mb-1">$1</h5>');
-  text = text.replace(/^#### (.+)$/gm, '<h4 class="text-base font-semibold text-neutral-200 mt-4 mb-1">$1</h4>');
-  text = text.replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-[#ededed] mt-5 mb-2">$1</h3>');
-  text = text.replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold text-[#ededed] mt-6 mb-2">$1</h2>');
-  text = text.replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-[#ededed] mt-6 mb-3">$1</h1>');
+  text = text.replace(/^###### (.+)$/gm, '<h6 class="mt-4 mb-1 text-xs font-semibold text-fg-secondary">$1</h6>');
+  text = text.replace(/^##### (.+)$/gm, '<h5 class="mt-4 mb-1 text-sm font-semibold text-fg">$1</h5>');
+  text = text.replace(/^#### (.+)$/gm, '<h4 class="mt-4 mb-1 text-base font-semibold text-fg">$1</h4>');
+  text = text.replace(/^### (.+)$/gm, '<h3 class="mt-4 mb-1.5 text-base font-semibold text-fg">$1</h3>');
+  text = text.replace(/^## (.+)$/gm, '<h2 class="mt-[22px] mb-2 text-[19px] font-bold tracking-[-0.02em] text-fg">$1</h2>');
+  text = text.replace(/^# (.+)$/gm, '<h1 class="mt-1 mb-3 text-2xl font-bold tracking-[-0.025em] text-fg">$1</h1>');
 
   // Horizontal rule
-  text = text.replace(/^(---|\*\*\*|___)$/gm, '<hr class="border-[#262626] my-4" />');
+  text = text.replace(/^(---|\*\*\*|___)$/gm, '<hr class="my-4 border-0" />');
 
   // Images before links (to avoid conflict)
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg border border-[#262626] my-2" />');
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt, src) => `<img src="${safeUrl(src)}" alt="${alt}" class="my-2 max-w-full rounded-segment" />`);
 
   // Links
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-[#569CD6] hover:underline" target="_blank" rel="noopener">$1</a>');
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, href) => `<a href="${safeUrl(href)}" class="text-accent hover:underline" target="_blank" rel="noopener noreferrer">${label}</a>`);
 
   // Bold + Italic
   text = text.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-  text = text.replace(/\*\*(.+?)\*\*/g, '<strong class="text-[#ededed]">$1</strong>');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-fg">$1</strong>');
   text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
   // Strikethrough
-  text = text.replace(/~~(.+?)~~/g, '<del class="text-neutral-500">$1</del>');
+  text = text.replace(/~~(.+?)~~/g, '<del class="text-fg-tertiary">$1</del>');
 
   // Tables
   text = text.replace(
     /^\|(.+)\|$\n^\|[-| :]+\|$\n((?:^\|.+\|$\n?)*)/gm,
-    (_m, header, _sep, body) => {
+    (_m, header, body) => {
       const hCells = header.split("|").filter((c: string) => c.trim() !== "");
       const bRows = String(body || "").trim().split("\n").filter(Boolean).map((r: string) =>
         r.split("|").filter((c: string) => c.trim() !== ""),
       );
-      const th = `<tr class="border-b border-[#262626]">${hCells.map((c: string) => `<th class="px-3 py-2 text-left text-xs font-medium text-neutral-300">${c.trim()}</th>`).join("")}</tr>`;
+      const th = `<tr class="bg-surface-elevated">${hCells.map((c: string) => `<th class="px-3 py-2 text-left text-[13px] font-semibold text-fg">${c.trim()}</th>`).join("")}</tr>`;
       const tb = bRows.map((row: string[]) =>
-        `<tr class="border-b border-[#262626]/50">${row.map((c: string) => `<td class="px-3 py-1.5 text-sm text-neutral-400">${c.trim()}</td>`).join("")}</tr>`,
+        `<tr class="even:bg-row-stripe">${row.map((c: string) => `<td class="px-3 py-2 text-[13px] text-fg-secondary">${c.trim()}</td>`).join("")}</tr>`,
       ).join("");
-      return `<div class="overflow-auto my-3"><table class="w-full border border-[#262626] rounded-lg overflow-hidden">${th}${tb}</table></div>`;
+      return `<div class="my-3 overflow-auto rounded-segment"><table class="w-full border-collapse">${th}${tb}</table></div>`;
     },
   );
 
@@ -96,13 +112,13 @@ function renderMarkdown(md: string): string {
   text = text.replace(/- \[([ x])\] (.+)/g, (_m, check, label) => {
     const checked = check === "x" ? "checked" : "";
     const idx = checkIdx++;
-    return `<label class="flex items-center gap-2 my-1 text-sm text-neutral-400 cursor-pointer"><input type="checkbox" ${checked} data-idx="${idx}" class="accent-[#8A2BE2] cursor-pointer" /> ${label}</label>`;
+    return `<label class="flex min-h-8 cursor-pointer items-center gap-2.5 text-sm text-fg-secondary"><input type="checkbox" ${checked} data-idx="${idx}" class="size-4 cursor-pointer accent-accent" /> ${label}</label>`;
   });
 
   // Unordered lists
   text = text.replace(/((?:^[\*\-] .+$\n?)+)/gm, (match) => {
     const items = match.trim().split("\n").map((l) =>
-      l.replace(/^[\*\-] (.+)$/, '<li class="text-sm text-neutral-400 ml-4 list-disc">$1</li>'),
+      l.replace(/^[\*\-] (.+)$/, '<li class="ml-5 list-disc text-sm leading-[1.6] text-fg-secondary">$1</li>'),
     ).join("");
     return `<ul class="my-2 space-y-1">${items}</ul>`;
   });
@@ -110,16 +126,16 @@ function renderMarkdown(md: string): string {
   // Ordered lists
   text = text.replace(/((?:^\d+\. .+$\n?)+)/gm, (match) => {
     const items = match.trim().split("\n").map((l) =>
-      l.replace(/^\d+\. (.+)$/, '<li class="text-sm text-neutral-400 ml-4 list-decimal">$1</li>'),
+      l.replace(/^\d+\. (.+)$/, '<li class="ml-5 list-decimal text-sm leading-[1.6] text-fg-secondary">$1</li>'),
     ).join("");
     return `<ol class="my-2 space-y-1">${items}</ol>`;
   });
 
   // Paragraphs
-  text = text.replace(/^(?!<[a-z]|<hr|<div|<table|<ul|<ol|<blockquote|<pre|<label|<code)(.+)$/gm, '<p class="text-sm text-neutral-400 leading-relaxed my-1">$1</p>');
+  text = text.replace(/^(?!<[a-z]|<hr|<div|<table|<ul|<ol|<blockquote|<pre|<label|<code)(.+)$/gm, '<p class="my-1 text-sm leading-[1.65] text-fg-secondary">$1</p>');
 
   // Clean empty paragraphs
-  text = text.replace(/<p class="text-sm text-neutral-400 leading-relaxed my-1"><\/p>/g, "");
+  text = text.replace(/<p class="my-1 text-sm leading-\[1\.65\] text-fg-secondary"><\/p>/g, "");
 
   return text;
 }
@@ -176,110 +192,74 @@ export default function MarkdownEditorPage() {
   }, [markdown, preview, copyMode]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-6xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <MarkdownLogoIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Markdown Editor</h1>
-            <p className="text-sm text-neutral-500">
-              Write and preview Markdown in real time
-            </p>
-          </div>
-        </div>
+    <ToolPage width="wide">
+      <ToolHeader
+        icon={MarkdownLogoIcon}
+        title="Markdown Editor"
+        description="Write and preview Markdown in real time"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex gap-1">
-              {[
-                { key: "write" as const, icon: TextAlignLeftIcon, label: "Write" },
-                { key: "split" as const, icon: EyeIcon, label: "Split" },
-                { key: "preview" as const, icon: EyeIcon, label: "Preview" },
-              ].map((v) => (
-                <button
-                  key={v.key}
-                  onClick={() => setView(v.key)}
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                    view === v.key
-                      ? "bg-[#171717] text-[#8A2BE2] border-[#8A2BE2]/30"
-                      : "text-neutral-500 hover:text-[#ededed] border-transparent"
-                  }`}
-                >
-                  <v.icon className="h-3.5 w-3.5" />
-                  {v.label}
-                </button>
-              ))}
-            </div>
+      <CardStack>
+        <Card>
+          <div className="flex min-h-control flex-wrap items-center justify-between gap-3">
+            <SegmentedControl
+              ariaLabel="View"
+              value={view}
+              onChange={setView}
+              options={[
+                { value: "write", icon: TextAlignLeftIcon, label: "Write" },
+                { value: "split", icon: EyeIcon, label: "Split" },
+                { value: "preview", icon: EyeIcon, label: "Preview" },
+              ]}
+            />
             <div className="flex items-center gap-2">
-              <select
+              <Select
+                size="sm"
+                aria-label="Copy format"
                 value={copyMode}
                 onChange={(e) => setCopyMode(e.target.value as "md" | "html")}
-                className="px-2 py-1 rounded-md bg-[#171717] border border-[#262626] text-xs text-neutral-400 outline-none cursor-pointer"
               >
                 <option value="md">Copy Markdown</option>
                 <option value="html">Copy HTML</option>
-              </select>
-              <button
-                onClick={handleCopy}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                  copied
-                    ? "bg-green-500/10 text-green-400 border-green-500/30"
-                    : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
-                }`}
-              >
-                {copied ? (
-                  <>
-                    <CheckIcon className="h-3.5 w-3.5" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon className="h-3.5 w-3.5" />
-                    Copy
-                  </>
-                )}
-              </button>
+              </Select>
+              <CopyButton copied={copied} onClick={handleCopy} />
             </div>
           </div>
 
           <div className={`grid ${view === "split" ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"} gap-4`}>
             {view !== "preview" && (
-              <textarea
+              <TextArea
                 value={markdown}
                 onChange={(e) => setMarkdown(e.target.value)}
                 placeholder="Write Markdown here..."
+                aria-label="Markdown"
                 rows={20}
-                className="w-full px-4 py-3 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200 resize-none leading-relaxed"
+                className="leading-[1.7]!"
               />
             )}
             {view !== "write" && (
               <div
                 ref={previewRef}
-                className="rounded-lg bg-black border border-[#262626] p-4 overflow-auto max-h-[540px] leading-relaxed markdown-body"
+                className="markdown-body max-h-[540px] overflow-auto rounded-control bg-field px-5 py-4"
                 dangerouslySetInnerHTML={{ __html: preview }}
               />
             )}
           </div>
-        </div>
+        </Card>
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Markdown Editor</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              Write and preview Markdown with live rendering. Supports
-              headings, bold/italic, code blocks with syntax highlighting,
-              links, images, blockquotes, task lists, and tables.
-            </p>
-            <p>
-              Switch between <strong>Write</strong>, <strong>Split</strong>{" "}
-              (side-by-side), and <strong>Preview</strong> modes. Copy output
-              as raw Markdown or rendered HTML. All processing happens locally.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Markdown Editor">
+          <p>
+            Write and preview Markdown with live rendering. Supports
+            headings, bold/italic, code blocks with syntax highlighting,
+            links, images, blockquotes, task lists, and tables.
+          </p>
+          <p>
+            Switch between <strong>Write</strong>, <strong>Split</strong>{" "}
+            (side-by-side), and <strong>Preview</strong> modes. Copy output
+            as raw Markdown or rendered HTML. All processing happens locally.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }
