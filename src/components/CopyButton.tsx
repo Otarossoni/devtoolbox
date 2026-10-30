@@ -4,40 +4,92 @@ import { useState } from "react";
 import { CopyIcon, CheckIcon } from "@phosphor-icons/react/dist/ssr";
 
 interface CopyButtonProps {
-  text: string;
+  /** Uncontrolled: text copied by the button itself */
+  text?: string;
+  /** Controlled: copied state owned by the page */
+  copied?: boolean;
+  /** Controlled: the page's own copy handler */
+  onClick?: () => void;
+  disabled?: boolean;
+  label?: string;
+  copiedLabel?: string;
+  /** button: 36px elevated · inline: text-only (e.g. "Copy HEX") · icon: 36px icon only */
+  variant?: "button" | "inline" | "icon";
   className?: string;
 }
 
-export default function CopyButton({ text, className = "" }: CopyButtonProps) {
-  const [copied, setCopied] = useState(false);
+export default function CopyButton({
+  text,
+  copied: copiedProp,
+  onClick,
+  disabled = false,
+  label = "Copy",
+  copiedLabel = "Copied!",
+  variant = "button",
+  className = "",
+}: CopyButtonProps) {
+  const [copiedSelf, setCopiedSelf] = useState(false);
+  const copied = copiedProp ?? copiedSelf;
 
   const handleCopy = async () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
+    if (text === undefined) return;
     await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedSelf(true);
+    setTimeout(() => setCopiedSelf(false), 2000);
   };
+
+  const Icon = copied ? CheckIcon : CopyIcon;
+  const base =
+    "hit-area pressable inline-flex h-control-sm shrink-0 cursor-pointer items-center justify-center gap-1.5 font-medium transition disabled:cursor-not-allowed disabled:opacity-40";
+
+  if (variant === "icon") {
+    return (
+      <button
+        type="button"
+        onClick={handleCopy}
+        disabled={disabled}
+        aria-label={copied ? copiedLabel : label}
+        title={copied ? copiedLabel : label}
+        className={`${base} w-control-sm rounded-segment ${
+          copied ? "text-success" : "text-fg-secondary hover:text-accent-text"
+        } ${className}`}
+      >
+        <Icon className="size-3.5" />
+      </button>
+    );
+  }
+
+  if (variant === "inline") {
+    return (
+      <button
+        type="button"
+        onClick={handleCopy}
+        disabled={disabled}
+        className={`${base} -ml-2 self-start rounded-segment px-2 text-xs ${
+          copied ? "text-success" : "text-fg-secondary hover:text-accent-text"
+        } ${className}`}
+      >
+        <Icon className="size-3.5" />
+        {copied ? copiedLabel : label}
+      </button>
+    );
+  }
 
   return (
     <button
+      type="button"
       onClick={handleCopy}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer ${
-        copied
-          ? "bg-green-500/10 text-green-400 border border-green-500/30"
-          : "bg-[#171717] text-neutral-400 border border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
+      disabled={disabled}
+      className={`${base} rounded-segment px-3.5 text-[13px] ${
+        copied ? "bg-success-tint text-success" : "bg-surface-elevated text-fg-secondary hover:text-fg"
       } ${className}`}
-      aria-label={copied ? "Copiado!" : "Copiar"}
     >
-      {copied ? (
-        <>
-          <CheckIcon className="h-3.5 w-3.5" />
-          Copiado!
-        </>
-      ) : (
-        <>
-          <CopyIcon className="h-3.5 w-3.5" />
-          Copiar
-        </>
-      )}
+      <Icon className="size-3.5" />
+      {copied ? copiedLabel : label}
     </button>
   );
 }

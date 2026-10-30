@@ -3,11 +3,16 @@
 import { useState, useCallback, useMemo } from "react";
 import {
   ArrowsLeftRightIcon,
-  CopyIcon,
-  CheckIcon,
   DownloadSimpleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import yaml from "js-yaml";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard, ErrorCard } from "@/components/Card";
+import { TextArea } from "@/components/Field";
+import SegmentedControl from "@/components/SegmentedControl";
+import Button from "@/components/Button";
+import CopyButton from "@/components/CopyButton";
+import { Actions } from "@/components/Output";
 
 type ConvMode = "json2yaml" | "yaml2json";
 
@@ -64,49 +69,26 @@ export default function JSONYamlPage() {
   }, [result.output, mode]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <ArrowsLeftRightIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">JSON ↔ YAML</h1>
-            <p className="text-sm text-neutral-500">
-              Convert between JSON and YAML formats
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={ArrowsLeftRightIcon}
+        title="JSON ↔ YAML"
+        description="Convert between JSON and YAML formats"
+      />
 
-        <div className="animate-5 flex gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setMode("json2yaml")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "json2yaml"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            JSON → YAML
-          </button>
-          <button
-            onClick={() => setMode("yaml2json")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "yaml2json"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            YAML → JSON
-          </button>
-        </div>
+      <CardStack>
+        <SegmentedControl
+          ariaLabel="Mode"
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "json2yaml", label: "JSON → YAML" },
+            { value: "yaml2json", label: "YAML → JSON" },
+          ]}
+        />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">Input</span>
-          </div>
-
-          <textarea
+        <Card label="Input">
+          <TextArea
             value={currentInput}
             onChange={(e) =>
               mode === "json2yaml"
@@ -119,85 +101,45 @@ export default function JSONYamlPage() {
                 : "Paste YAML...\ne.g.\nkey: value\nlist:\n  - item1"
             }
             rows={12}
-            className={`w-full px-4 py-2.5 rounded-lg bg-black border text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none transition-colors duration-200 resize-none ${
-              result.error
-                ? "border-red-500/50"
-                : "border-[#262626] focus:border-[#8A2BE2]"
-            }`}
+            invalid={!!result.error}
           />
-        </div>
+        </Card>
 
         {result.error && (
-          <div className="animate-9 rounded-xl border border-red-500/30 bg-red-500/5 p-6 mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-red-400 uppercase tracking-wider">Error</span>
-            </div>
-            <span className="text-sm text-red-400 font-mono">{result.error}</span>
-          </div>
+          <ErrorCard label="Error">{result.error}</ErrorCard>
         )}
 
         {result.output && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">Output</span>
-            </div>
-
-            <textarea
+          <Card label="Output">
+            <TextArea
               value={result.output}
               readOnly
               rows={14}
-              className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none resize-none"
+              aria-label="Output"
             />
-
-            <div className="flex items-center justify-end gap-2 mt-4">
-              <button
-                onClick={handleCopy}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                  copied
-                    ? "bg-green-500/10 text-green-400 border-green-500/30"
-                    : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
-                }`}
-              >
-                {copied ? (
-                  <>
-                    <CheckIcon className="h-3.5 w-3.5" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon className="h-3.5 w-3.5" />
-                    Copy
-                  </>
-                )}
-              </button>
-              <button
-                onClick={handleDownload}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-[#171717] text-neutral-400 border border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30 transition-all duration-200 cursor-pointer"
-              >
-                <DownloadSimpleIcon className="h-3.5 w-3.5" />
+            <Actions>
+              <CopyButton copied={copied} onClick={handleCopy} />
+              <Button icon={DownloadSimpleIcon} onClick={handleDownload}>
                 Download
-              </button>
-            </div>
-          </div>
+              </Button>
+            </Actions>
+          </Card>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About JSON ↔ YAML</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              <strong>JSON → YAML</strong> — converts JSON to clean,
-              indentation-based YAML format. Ideal for configuration files,
-              Docker Compose, and Kubernetes manifests.
-            </p>
-            <p>
-              <strong>YAML → JSON</strong> — parses YAML and outputs
-              pretty-printed JSON with 2-space indentation. Handles nested
-              objects, arrays, and common YAML syntax.
-            </p>
-            <p>Powered by js-yaml — all processing happens locally.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About JSON ↔ YAML">
+          <p>
+            <strong>JSON → YAML</strong> — converts JSON to clean,
+            indentation-based YAML format. Ideal for configuration files,
+            Docker Compose, and Kubernetes manifests.
+          </p>
+          <p>
+            <strong>YAML → JSON</strong> — parses YAML and outputs
+            pretty-printed JSON with 2-space indentation. Handles nested
+            objects, arrays, and common YAML syntax.
+          </p>
+          <p>Powered by js-yaml — all processing happens locally.</p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

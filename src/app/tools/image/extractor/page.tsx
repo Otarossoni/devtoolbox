@@ -3,11 +3,14 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
   EyedropperIcon,
-  CopyIcon,
-  CheckIcon,
   ImageIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { rgbToHex, rgbToHsl } from "@/lib/color";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard, CardMeta } from "@/components/Card";
+import CopyButton from "@/components/CopyButton";
+import DropZone from "@/components/DropZone";
+import { ValueRow } from "@/components/ValueRow";
 
 export default function PixelExtractorPage() {
   const [image, setImage] = useState<File | null>(null);
@@ -178,70 +181,55 @@ export default function PixelExtractorPage() {
   const rgbaStr = color && color.a < 1 ? `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})` : "";
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <EyedropperIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Pixel Color Extractor</h1>
-            <p className="text-sm text-neutral-500">
-              Click on any pixel to extract its color
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={EyedropperIcon}
+        title="Pixel Color Extractor"
+        description="Click on any pixel to extract its color"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">Upload</span>
-          </div>
-
+      <CardStack>
+        <Card label="Upload">
           {!image ? (
-            <div
+            <DropZone
+              isDragging={isDragging}
               onDrop={handleDrop}
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
               onClick={() => fileInputRef.current?.click()}
-              className={`flex flex-col items-center justify-center gap-3 p-8 rounded-lg border-2 border-dashed transition-colors duration-200 cursor-pointer min-h-[120px] ${
-                isDragging
-                  ? "border-[#8A2BE2] bg-[#8A2BE2]/5"
-                  : "border-[#262626] hover:border-[#3a3a3a]"
-              }`}
-            >
-              <ImageIcon className="h-8 w-8 text-neutral-600" />
-              <span className="text-sm text-neutral-500">Drop an image, paste (Ctrl+V), or click to browse</span>
-            </div>
+              icon={ImageIcon}
+              title="Drop an image, paste (Ctrl+V), or click to browse"
+            />
           ) : (
-            <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer">
-              <span className="text-sm text-[#ededed] font-mono">{image.name}</span>
-              <span className="text-xs text-neutral-500 ml-3">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="pressable flex min-h-control cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 rounded-control bg-field px-4 py-2 text-left transition hover:bg-field-hover"
+            >
+              <span className="font-mono text-sm break-all text-fg">{image.name}</span>
+              <span className="text-xs text-fg-secondary">
                 {imgW}×{imgH} · Click to change
               </span>
-            </div>
+            </button>
           )}
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-        </div>
+        </Card>
 
         {image && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">Click to pick a color</span>
-            </div>
-
-            <div ref={containerRef} className="rounded-lg bg-black border border-[#262626] flex items-center justify-center relative">
+          <Card label="Click to pick a color">
+            <div ref={containerRef} className="relative flex items-center justify-center rounded-control bg-field">
               <canvas
                 ref={canvasRef}
                 onClick={handleCanvasClick}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onMouseMove={handleMouseMove}
-                className="cursor-crosshair block"
+                className="block cursor-crosshair"
               />
               {showZoom && zoomPos && (
                 <canvas
                   ref={zoomCanvasRef}
-                  className="fixed rounded-lg border-2 border-[#8A2BE2] pointer-events-none shadow-lg"
+                  className="pointer-events-none fixed rounded-control border-2 border-accent shadow-lg"
                   style={{
                     left: zoomPos.x,
                     top: zoomPos.y,
@@ -250,49 +238,46 @@ export default function PixelExtractorPage() {
                 />
               )}
             </div>
-          </div>
+          </Card>
         )}
 
         {color && (
-          <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-neutral-500 uppercase tracking-wider">Extracted color</span>
-              <span className="text-xs text-neutral-600">
+          <Card
+            label="Extracted color"
+            actions={
+              <CardMeta>
                 ({color.x}, {color.y})
-              </span>
-            </div>
-
-            <div className="flex gap-4 items-start flex-col sm:flex-row">
+              </CardMeta>
+            }
+          >
+            <div className="flex flex-col items-start gap-4 sm:flex-row">
               <div
-                className="w-24 h-24 rounded-lg border border-[#262626] shrink-0"
+                className="size-24 shrink-0 rounded-control"
                 style={{ backgroundColor: hex }}
               />
-              <div className="flex-1 w-full space-y-2">
+              <div className="w-full flex-1 space-y-2">
                 <CopyRow label="HEX" value={hex} />
                 <CopyRow label="RGB" value={rgbStr} />
                 {rgbaStr && <CopyRow label="RGBA" value={rgbaStr} />}
                 <CopyRow label="HSL" value={hslStr} />
               </div>
             </div>
-          </div>
+          </Card>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Pixel Extractor</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              Upload any image and click on a pixel to extract its exact color.
-              The color is returned in HEX, RGB, and HSL formats with individual
-              copy buttons. Coordinates show the original image pixel position.
-            </p>
-            <p>
-              Works with PNG, JPEG, WebP, and other common image formats.
-              All processing happens locally via the Canvas API.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Pixel Extractor">
+          <p>
+            Upload any image and click on a pixel to extract its exact color.
+            The color is returned in HEX, RGB, and HSL formats with individual
+            copy buttons. Coordinates show the original image pixel position.
+          </p>
+          <p>
+            Works with PNG, JPEG, WebP, and other common image formats.
+            All processing happens locally via the Canvas API.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }
 
@@ -305,17 +290,10 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   }, [value]);
 
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-[#171717] border border-[#262626]">
-      <span className="text-xs text-neutral-500">{label}</span>
-      <div className="flex items-center gap-2">
-        <code className="text-sm font-mono text-[#ededed]">{value}</code>
-        <button
-          onClick={handleCopy}
-          className={`shrink-0 p-1 rounded transition-colors duration-200 cursor-pointer ${copied ? "text-green-400" : "text-neutral-600 hover:text-[#8A2BE2]"}`}
-        >
-          {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <CopyIcon className="h-3.5 w-3.5" />}
-        </button>
-      </div>
-    </div>
+    <ValueRow
+      label={label}
+      value={value}
+      action={<CopyButton variant="icon" copied={copied} onClick={handleCopy} label={`Copy ${label}`} />}
+    />
   );
 }

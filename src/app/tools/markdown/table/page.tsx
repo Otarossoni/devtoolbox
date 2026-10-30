@@ -3,9 +3,13 @@
 import { useState, useCallback } from "react";
 import {
   TableIcon,
-  CopyIcon,
-  CheckIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard, FieldLabel, CardMeta } from "@/components/Card";
+import { TextField, TextArea } from "@/components/Field";
+import Button from "@/components/Button";
+import CopyButton from "@/components/CopyButton";
+import { Actions } from "@/components/Output";
 
 type Alignment = "left" | "center" | "right";
 
@@ -98,79 +102,68 @@ export default function MarkdownTablePage() {
   }, [output]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <TableIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Table Generator</h1>
-            <p className="text-sm text-neutral-500">
-              Generate and edit Markdown tables
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={TableIcon}
+        title="Table Generator"
+        description="Generate and edit Markdown tables"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">Size</span>
-          </div>
-
-          <div className="flex flex-wrap gap-3 items-end">
-            <div>
-              <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">Columns</label>
-              <input
+      <CardStack>
+        <Card label="Size">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-2">
+              <FieldLabel htmlFor="table-cols">Columns</FieldLabel>
+              <TextField
+                id="table-cols"
                 type="number"
                 value={cols}
                 onChange={(e) => rebuildGrid(Math.max(1, parseInt(e.target.value) || 1), rows)}
                 min={1}
                 max={10}
-                className="w-20 px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none focus:border-[#8A2BE2] transition-colors duration-200"
+                className="w-24!"
               />
             </div>
-            <div>
-              <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">Rows</label>
-              <input
+            <div className="flex flex-col gap-2">
+              <FieldLabel htmlFor="table-rows">Rows</FieldLabel>
+              <TextField
+                id="table-rows"
                 type="number"
                 value={rows}
                 onChange={(e) => rebuildGrid(cols, Math.max(1, parseInt(e.target.value) || 1))}
                 min={1}
                 max={20}
-                className="w-20 px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none focus:border-[#8A2BE2] transition-colors duration-200"
+                className="w-24!"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 pb-1">
               {PRESETS.map((p) => (
-                <button
+                <Button
                   key={p.label}
                   onClick={() => rebuildGrid(p.cols, p.rows)}
-                  className="px-3 py-2 rounded-lg text-xs font-mono bg-[#171717] text-neutral-400 border border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a] transition-all duration-200 cursor-pointer"
+                  className="font-mono"
                 >
                   {p.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">Content</span>
-            <span className="text-[10px] text-neutral-600">
-              Click header to toggle alignment
-            </span>
-          </div>
-
+        <Card
+          label="Content"
+          actions={<CardMeta>Click header to toggle alignment</CardMeta>}
+        >
           <div className="overflow-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr>
                   {cells[0]?.map((_, ci) => (
-                    <th key={ci} className="px-3 py-2 text-left">
+                    <th key={ci} className="px-1 pb-1 text-left">
                       <button
                         onClick={() => toggleAlign(ci)}
-                        className="text-[10px] font-mono text-neutral-500 hover:text-[#8A2BE2] transition-colors duration-200 cursor-pointer"
+                        aria-label={`Column ${ci + 1} alignment: ${alignments[ci]}`}
+                        className="hit-area pressable h-control-sm min-w-control-sm cursor-pointer rounded-segment px-2 font-mono text-sm text-fg-secondary transition-colors hover:bg-surface-elevated hover:text-accent-text"
                       >
                         {alignments[ci] === "left" ? "←" : alignments[ci] === "center" ? "↔" : "→"}
                       </button>
@@ -185,17 +178,18 @@ export default function MarkdownTablePage() {
                       <td key={ci} className="px-1 py-1">
                         <input
                           value={cell}
+                          aria-label={ri === 0 ? `Header ${ci + 1}` : `Row ${ri}, column ${ci + 1}`}
                           onChange={(e) => {
                             const next = cells.map((r) => [...r]);
                             next[ri][ci] = e.target.value;
                             setCells(next);
                           }}
                           placeholder={ri === 0 ? `Header ${ci + 1}` : ""}
-                          className={`w-full px-2 py-1.5 rounded-md border text-xs font-mono outline-none transition-colors duration-200 ${
+                          className={`h-control-sm w-full min-w-20 rounded-segment px-2.5 font-mono text-[13px] placeholder:text-fg-tertiary ${
                             ri === 0
-                              ? "bg-[#171717] border-[#262626] text-neutral-300"
-                              : "bg-black border-[#262626] text-[#ededed] placeholder:text-neutral-600"
-                          } focus:border-[#8A2BE2]`}
+                              ? "bg-surface-elevated font-medium text-fg"
+                              : "bg-field text-fg"
+                          }`}
                           style={{ textAlign: alignments[ci] }}
                         />
                       </td>
@@ -205,60 +199,33 @@ export default function MarkdownTablePage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">Output</span>
-          </div>
-
-          <textarea
+        <Card label="Output">
+          <TextArea
             value={output}
             readOnly
             rows={rows + 2}
-            className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none resize-none"
+            aria-label="Markdown output"
           />
+          <Actions>
+            <CopyButton copied={copied} onClick={handleCopy} />
+          </Actions>
+        </Card>
 
-          <div className="flex items-center justify-end mt-4">
-            <button
-              onClick={handleCopy}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer border ${
-                copied
-                  ? "bg-green-500/10 text-green-400 border-green-500/30"
-                  : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#8A2BE2] hover:border-[#8A2BE2]/30"
-              }`}
-            >
-              {copied ? (
-                <>
-                  <CheckIcon className="h-3.5 w-3.5" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <CopyIcon className="h-3.5 w-3.5" />
-                  Copy
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Table Generator</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              Generate properly formatted Markdown tables with editable cells
-              and column alignment. Click the arrows in each header to toggle
-              between left, center, and right alignment.
-            </p>
-            <p>
-              Use the Column and Row inputs to resize the grid, or click a
-              preset for common sizes. The output updates live and can be
-              copied directly into any Markdown document.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Table Generator">
+          <p>
+            Generate properly formatted Markdown tables with editable cells
+            and column alignment. Click the arrows in each header to toggle
+            between left, center, and right alignment.
+          </p>
+          <p>
+            Use the Column and Row inputs to resize the grid, or click a
+            preset for common sizes. The output updates live and can be
+            copied directly into any Markdown document.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

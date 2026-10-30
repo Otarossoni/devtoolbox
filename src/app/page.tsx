@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ToolPage from "@/components/ToolPage";
 import {
   FingerprintSimpleIcon,
   ArrowsLeftRightIcon,
@@ -92,44 +93,38 @@ const tools = [
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        {/* Header */}
-        <div className="animate-5 mb-12">
-          <h1 className="text-2xl font-bold mb-2">DevToolbox</h1>
-          <p className="text-neutral-500 text-base">
-            Software development utilities.
-          </p>
-        </div>
-
-        {/* Tools grid */}
-        <div className="animate-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {tools.map((tool) => (
-            <Link
-              key={tool.title}
-              href={tool.href}
-              className="group relative block rounded-lg border p-5 transition-all duration-200 border-[#262626] bg-[#0a0a0a] hover:bg-[#171717] hover:border-[#8A2BE2] cursor-pointer"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center shrink-0 w-9 h-9 rounded-lg border bg-[#8A2BE2]/10 border-[#8A2BE2]/20">
-                    <tool.icon className="h-5 w-5 text-[#8A2BE2]" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#ededed]">
-                      {tool.title}
-                    </p>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      {tool.description}
-                    </p>
-                  </div>
-                </div>
-                <ArrowRightIcon className="h-4 w-4 text-neutral-500 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:text-[#8A2BE2] group-hover:translate-x-1 shrink-0 mt-1" />
-              </div>
-            </Link>
-          ))}
-        </div>
+    <ToolPage>
+      {/* Header */}
+      <div className="mb-12 flex flex-col gap-2">
+        <h1 className="text-[32px] leading-[1.15] font-bold tracking-[-0.025em] text-fg">DevToolbox</h1>
+        <p className="text-base text-fg-secondary">
+          Software development utilities.
+        </p>
       </div>
-    </div>
+
+      {/* Tools grid */}
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-4">
+        {tools.map((tool) => (
+          <Link
+            key={tool.title}
+            href={tool.href}
+            className="group pressable flex items-start gap-3.5 rounded-card bg-surface p-5 text-fg transition hover:bg-surface-elevated"
+          >
+            <div className="flex size-11 flex-none items-center justify-center rounded-control bg-accent-tint text-accent">
+              <tool.icon className="size-[22px]" />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5">
+              <p className="text-[15px] font-semibold tracking-[-0.01em]">
+                {tool.title}
+              </p>
+              <p className="text-[13px] leading-[1.45] text-pretty text-fg-secondary">
+                {tool.description}
+              </p>
+            </div>
+            <ArrowRightIcon className="mt-1 size-4 flex-none text-fg-subtle transition group-hover:translate-x-1 group-hover:text-accent" />
+          </Link>
+        ))}
+      </div>
+    </ToolPage>
   );
 }

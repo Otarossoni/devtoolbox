@@ -148,7 +148,7 @@ export default function ColorPicker({ color, onChange }: ColorPickerProps) {
           if (rect) setPanelPos({ top: rect.bottom + 8, left: rect.left });
           setOpen(!open);
         }}
-        className="w-10 h-10 rounded-lg border border-[#262626] cursor-pointer shrink-0 hover:border-[#3a3a3a] transition-colors duration-200"
+        className="pressable size-control shrink-0 cursor-pointer rounded-control transition"
         style={{ background: previewColor }}
         aria-label="Open color picker"
       />
@@ -157,7 +157,7 @@ export default function ColorPicker({ color, onChange }: ColorPickerProps) {
         createPortal(
           <div
             ref={panelRef}
-            className="fixed z-[200] w-[264px] p-4 rounded-xl border border-[#262626] bg-[#0a0a0a] shadow-2xl space-y-3"
+            className="fixed z-[200] w-[264px] space-y-3 rounded-card bg-surface-elevated p-4 shadow-2xl"
             style={{ top: panelPos.top, left: panelPos.left }}
           >
           <canvas
@@ -168,13 +168,13 @@ export default function ColorPicker({ color, onChange }: ColorPickerProps) {
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             onMouseMove={handleMouseMove}
-            className="w-full h-auto rounded-lg border border-[#262626] cursor-crosshair"
+            className="h-auto w-full cursor-crosshair rounded-control"
           />
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-neutral-500 uppercase tracking-wider">Hue</span>
-              <span className="text-[10px] font-mono text-neutral-600">{h}°</span>
+              <span className="text-xs font-medium text-fg-secondary">Hue</span>
+              <span className="font-mono text-xs text-fg-secondary">{h}°</span>
             </div>
             <input
               type="range"
@@ -182,7 +182,7 @@ export default function ColorPicker({ color, onChange }: ColorPickerProps) {
               max={360}
               value={h}
               onChange={(e) => emit(parseInt(e.target.value), s, l)}
-              className="w-full h-2.5 rounded-full appearance-none cursor-pointer border border-[#262626]"
+              className="h-2.5 w-full cursor-pointer appearance-none rounded-full"
               style={{
                 background: `linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red)`,
               }}
@@ -191,18 +191,18 @@ export default function ColorPicker({ color, onChange }: ColorPickerProps) {
 
           <div className="flex gap-3 items-end">
             <div
-              className="w-10 h-10 rounded-lg border border-[#262626] shrink-0"
+              className="size-control shrink-0 rounded-control"
               style={{ background: previewColor }}
             />
             <div className="flex-1">
-              <span className="text-[10px] text-neutral-500 uppercase tracking-wider block mb-1">HEX</span>
+              <span className="mb-1 block text-xs font-medium text-fg-secondary">HEX</span>
               <input
                 type="text"
                 value={hexInput}
                 onChange={(e) => setHexInput(e.target.value)}
                 onBlur={syncFromHex}
                 onKeyDown={(e) => { if (e.key === "Enter") syncFromHex(); }}
-                className="w-full px-3 py-1.5 rounded-md bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200"
+                className="h-control-sm w-full rounded-segment bg-field px-3 font-mono text-base text-fg placeholder:text-fg-tertiary sm:text-sm"
               />
             </div>
           </div>

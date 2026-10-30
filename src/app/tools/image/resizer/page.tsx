@@ -8,6 +8,13 @@ import {
   LockKeyIcon,
   LockKeyOpenIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard, FieldLabel } from "@/components/Card";
+import { TextField } from "@/components/Field";
+import SegmentedControl from "@/components/SegmentedControl";
+import Button, { ToggleChip } from "@/components/Button";
+import DropZone from "@/components/DropZone";
+import { Actions } from "@/components/Output";
 
 type Format = "png" | "jpeg" | "webp";
 
@@ -149,51 +156,30 @@ export default function ImageResizerPage() {
   }, [previewSrc, format]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <ResizeIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Image Resizer</h1>
-            <p className="text-sm text-neutral-500">
-              Resize images with aspect ratio lock
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={ResizeIcon}
+        title="Image Resizer"
+        description="Resize images with aspect ratio lock"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">Upload</span>
-          </div>
-
-          <div
+      <CardStack>
+        <Card label="Upload">
+          <DropZone
+            isDragging={isDragging}
             onDrop={handleDrop}
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
             onClick={() => fileInputRef.current?.click()}
-            className={`flex flex-col items-center justify-center gap-3 p-8 rounded-lg border-2 border-dashed transition-colors duration-200 cursor-pointer min-h-[120px] ${
-              isDragging
-                ? "border-[#8A2BE2] bg-[#8A2BE2]/5"
-                : "border-[#262626] hover:border-[#3a3a3a]"
-            }`}
-          >
-            {image ? (
-              <>
-                <ImageIcon className="h-8 w-8 text-[#8A2BE2]" />
-                <span className="text-sm text-[#ededed] font-mono">{image.name}</span>
-                <span className="text-xs text-neutral-500">
-                  {originalW}×{originalH} · {formatSize(image.size)} · Click or drop to change
-                </span>
-              </>
-            ) : (
-              <>
-                <ImageIcon className="h-8 w-8 text-neutral-600" />
-                <span className="text-sm text-neutral-500">Drop an image or click to browse</span>
-              </>
-            )}
-          </div>
+            icon={ImageIcon}
+            loaded={!!image}
+            title={image ? image.name : "Drop an image or click to browse"}
+            meta={
+              image
+                ? `${originalW}×${originalH} · ${formatSize(image.size)} · Click or drop to change`
+                : undefined
+            }
+          />
 
           <input
             ref={fileInputRef}
@@ -203,135 +189,104 @@ export default function ImageResizerPage() {
             className="hidden"
           />
           <canvas ref={canvasRef} className="hidden" />
-        </div>
+        </Card>
 
         {image && (
           <>
-            <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-neutral-500 uppercase tracking-wider">Dimensions</span>
-                <button
+            <Card
+              label="Dimensions"
+              actions={
+                <ToggleChip
+                  pressed={lockAspect}
                   onClick={() => setLockAspect(!lockAspect)}
-                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs transition-all duration-200 cursor-pointer border ${
-                    lockAspect
-                      ? "bg-[#8A2BE2]/10 text-[#8A2BE2] border-[#8A2BE2]"
-                      : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-                  }`}
+                  icon={lockAspect ? LockKeyIcon : LockKeyOpenIcon}
                 >
-                  {lockAspect ? (
-                    <LockKeyIcon className="h-3 w-3" />
-                  ) : (
-                    <LockKeyOpenIcon className="h-3 w-3" />
-                  )}
                   {lockAspect ? "Locked" : "Unlocked"}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <div>
-                  <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">Width</label>
-                  <input
+                </ToggleChip>
+              }
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-2">
+                  <FieldLabel htmlFor="resize-width">Width</FieldLabel>
+                  <TextField
+                    id="resize-width"
                     type="number"
                     value={width || ""}
                     onChange={handleWidthChange}
                     placeholder="Width"
                     min={1}
-                    className="w-full px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200"
                   />
                 </div>
-                <div>
-                  <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">Height</label>
-                  <input
+                <div className="flex flex-col gap-2">
+                  <FieldLabel htmlFor="resize-height">Height</FieldLabel>
+                  <TextField
+                    id="resize-height"
                     type="number"
                     value={height || ""}
                     onChange={handleHeightChange}
                     placeholder="Height"
                     min={1}
-                    className="w-full px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="grid grid-cols-3 gap-2 flex-1">
-                  {FORMATS.map((f) => (
-                    <button
-                      key={f.value}
-                      onClick={() => setFormat(f.value)}
-                      className={`px-3 py-2 rounded-lg text-xs font-mono font-medium transition-all duration-200 cursor-pointer border ${
-                        format === f.value
-                          ? "bg-[#8A2BE2]/10 text-[#8A2BE2] border-[#8A2BE2]"
-                          : "bg-[#171717] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={handleResize}
-                  className="px-4 py-2 rounded-md text-xs font-medium bg-[#8A2BE2] text-white hover:bg-[#7a1fd1] transition-all duration-200 cursor-pointer shrink-0"
-                >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <SegmentedControl
+                  ariaLabel="Output format"
+                  layout="grid"
+                  className="flex-1"
+                  value={format}
+                  onChange={setFormat}
+                  options={FORMATS.map((f) => ({ value: f.value, label: f.label }))}
+                />
+                <Button variant="primary" size="md" onClick={handleResize}>
                   Resize
-                </button>
+                </Button>
               </div>
 
-              <p className="text-xs text-neutral-600 mt-3">
+              <p className="text-xs text-fg-tertiary">
                 Original: {originalW}×{originalH} · {formatSize(image.size)}
                 {width > 0 && height > 0 && (width !== originalW || height !== originalH) && (
                   <span> → {width}×{height}</span>
                 )}
               </p>
-            </div>
+            </Card>
 
             {previewSrc && (
-              <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                    Preview · {formatSize(resizedSize)}
-                  </span>
-                </div>
-
-                <div className="rounded-lg bg-black border border-[#262626] p-2 flex items-center justify-center">
+              <Card label={`Preview · ${formatSize(resizedSize)}`}>
+                <div className="flex items-center justify-center rounded-control bg-field p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={previewSrc}
                     alt="Preview"
-                    className="max-w-full max-h-80 rounded object-contain"
+                    className="max-h-80 max-w-full rounded-inline object-contain"
                   />
                 </div>
 
-                <div className="flex items-center justify-end mt-4">
-                  <button
-                    onClick={handleDownload}
-                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium bg-[#8A2BE2] text-white hover:bg-[#7a1fd1] transition-all duration-200 cursor-pointer"
-                  >
-                    <DownloadSimpleIcon className="h-3.5 w-3.5" />
+                <Actions>
+                  <Button variant="primary" size="md" icon={DownloadSimpleIcon} onClick={handleDownload}>
                     Download
-                  </button>
-                </div>
-              </div>
+                  </Button>
+                </Actions>
+              </Card>
             )}
           </>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Image Resizer</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              Resize any image by setting exact width and height. Toggle the
-              aspect ratio lock to maintain proportions or set dimensions
-              independently. All processing happens locally via the Canvas API.
-            </p>
-            <p>
-              <strong>Locked</strong> — changing one dimension updates the
-              other to preserve the original aspect ratio.{" "}
-              <strong>Unlocked</strong> — set both dimensions freely. Output
-              format can be PNG, JPEG, or WebP.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Image Resizer">
+          <p>
+            Resize any image by setting exact width and height. Toggle the
+            aspect ratio lock to maintain proportions or set dimensions
+            independently. All processing happens locally via the Canvas API.
+          </p>
+          <p>
+            <strong>Locked</strong> — changing one dimension updates the
+            other to preserve the original aspect ratio.{" "}
+            <strong>Unlocked</strong> — set both dimensions freely. Output
+            format can be PNG, JPEG, or WebP.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

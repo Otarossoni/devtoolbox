@@ -2,12 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { TextboxIcon } from "@phosphor-icons/react/dist/ssr";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard } from "@/components/Card";
+import { TextArea } from "@/components/Field";
 
 const cardStyles =
-  "rounded-lg bg-[#171717] border border-[#262626] p-4 flex flex-col items-center gap-1";
-
-const valueStyles = "text-2xl font-mono font-semibold text-[#8A2BE2] leading-none";
-const labelStyles = "text-[11px] text-neutral-500 uppercase tracking-wider text-center";
+  "flex flex-col items-center justify-center gap-2 rounded-control bg-surface-elevated px-3 py-4";
+const valueStyles = "font-mono text-2xl font-semibold leading-none text-accent";
+const labelStyles = "text-center text-xs font-medium text-fg-secondary";
 
 export default function CharacterCounterPage() {
   const [text, setText] = useState("");
@@ -29,44 +31,25 @@ export default function CharacterCounterPage() {
   }, [text]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <TextboxIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Character Counter</h1>
-            <p className="text-sm text-neutral-500">
-              Count characters, words, lines, and more in real time
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={TextboxIcon}
+        title="Character Counter"
+        description="Count characters, words, lines, and more in real time"
+      />
 
-        <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">
-              Input
-            </span>
-          </div>
-
-          <textarea
+      <CardStack>
+        <Card label="Input">
+          <TextArea
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Type or paste text here..."
             rows={12}
-            className="w-full px-4 py-2.5 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] placeholder:text-neutral-600 outline-none focus:border-[#8A2BE2] transition-colors duration-200 resize-none"
           />
-        </div>
+        </Card>
 
-        <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-neutral-500 uppercase tracking-wider">
-              Statistics
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card label="Statistics">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className={cardStyles}>
               <span className={valueStyles}>{stats.chars.toLocaleString()}</span>
               <span className={labelStyles}>Characters</span>
@@ -100,29 +83,26 @@ export default function CharacterCounterPage() {
               <span className={labelStyles}>Bytes</span>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Character Counter</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              Real-time text statistics updated as you type. Everything runs
-              locally in your browser — no text is ever sent anywhere.
-            </p>
-            <p>
-              <strong>Characters</strong> — total count, newlines excluded. <strong>Spaces</strong> — number of space characters.{" "}
-              <strong>Words</strong> — split by whitespace boundaries.{" "}
-              <strong>Lines</strong> — count of newline-separated rows.
-            </p>
-            <p>
-              <strong>Sentences</strong> — split by <code className="text-xs text-neutral-500">. ! ?</code>.{" "}
-              <strong>Paragraphs</strong> — blocks separated by blank lines.{" "}
-              <strong>Reading time</strong> — estimated at 200 words per minute.{" "}
-              <strong>Bytes</strong> — UTF-8 encoded size in bytes.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Character Counter">
+          <p>
+            Real-time text statistics updated as you type. Everything runs
+            locally in your browser — no text is ever sent anywhere.
+          </p>
+          <p>
+            <strong>Characters</strong> — total count, newlines excluded. <strong>Spaces</strong> — number of space characters.{" "}
+            <strong>Words</strong> — split by whitespace boundaries.{" "}
+            <strong>Lines</strong> — count of newline-separated rows.
+          </p>
+          <p>
+            <strong>Sentences</strong> — split by <code>. ! ?</code>.{" "}
+            <strong>Paragraphs</strong> — blocks separated by blank lines.{" "}
+            <strong>Reading time</strong> — estimated at 200 words per minute.{" "}
+            <strong>Bytes</strong> — UTF-8 encoded size in bytes.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }

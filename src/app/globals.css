@@ -1,65 +1,191 @@
 @import "tailwindcss";
 
-:root {
-  --background: #000000;
-  --foreground: #ededed;
+/* Hover styles only apply to devices with a precise pointer. */
+@custom-variant hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+@theme {
+  /* Surfaces — separation by fill only, no borders */
+  --color-background: #000000;
+  --color-dot: rgba(255, 255, 255, 0.08);
+  --color-surface: #1c1c1e;
+  --color-surface-elevated: #2c2c2e;
+  --color-surface-hover: #242426;
+  --color-field: #111113;
+  --color-field-hover: #18181a;
+  --color-field-error: #2a1618;
+  --color-row-stripe: rgba(255, 255, 255, 0.035);
+
+  /* Text */
+  --color-fg: #f5f5f7;
+  --color-fg-secondary: rgba(235, 235, 245, 0.6);
+  /* Tertiary text kept at AA (≥ 4.5:1 on surface and field) */
+  --color-fg-tertiary: #8e8e93;
+  /* Decorative only: carets, idle icons — never body text */
+  --color-fg-subtle: rgba(235, 235, 245, 0.3);
+
+  /* Accent */
+  --color-accent: #a970ff;
+  --color-accent-hover: #b98aff;
+  /* Accent text on elevated or tinted fills (AA) */
+  --color-accent-text: #b98aff;
+  --color-accent-tint: rgba(169, 112, 255, 0.18);
+  --color-on-accent: #0b0b0c;
+
+  /* Status */
+  --color-success: #32d74b;
+  --color-success-tint: rgba(50, 215, 75, 0.14);
+  --color-error: #ff6961;
+  --color-error-tint: rgba(255, 69, 58, 0.1);
+  --color-warning: #ffb340;
+  --color-warning-tint: rgba(255, 179, 64, 0.14);
+
+  /* Syntax */
+  --color-syntax-key: #c9a9ff;
+  --color-syntax-string: #f2c48d;
+  --color-syntax-number: #8ec5ff;
+
+  /* Data categories (UUID structure groups) */
+  --color-data-1: #c9a9ff;
+  --color-data-2: #8ec5ff;
+  --color-data-3: #7ee08f;
+  --color-data-4: #f2c48d;
+  --color-data-5: #ff9ecb;
+
+  /* Radii */
+  --radius-card: 18px;
+  --radius-tile: 14px;
+  --radius-control: 12px;
+  --radius-segment: 10px;
+  --radius-inline: 6px;
+
+  /* Spacing (4px base) */
+  --spacing-card: 1.5rem;
+  --spacing-card-sm: 1.25rem;
+  --spacing-control: 2.75rem;
+  --spacing-control-sm: 2.25rem;
+  --spacing-sidebar: 17rem;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-html, body {
-  background-color: #000000;
-  color: #ededed;
-  font-family: Arial, Helvetica, sans-serif;
+:root {
+  --duration-base: 200ms;
+  --duration-entrance: 400ms;
+  color-scheme: dark;
 }
 
-[data-theme="dark"] {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1.2px, transparent 1.2px);
-  background-size: 24px 24px;
+html,
+body {
+  background-color: var(--color-background);
+  color: var(--color-fg);
 }
 
-@layer components {
-  ::selection {
-    background: #49494949;
-  }
+body {
+  /* Same dot grid as otaviorossoni.com */
+  background-image: radial-gradient(circle, var(--color-dot) 1px, transparent 1.25px);
+  background-size: 32px 32px;
+}
 
-  ::-webkit-scrollbar {
-    width: 0px;
-  }
+::selection {
+  background: var(--color-accent-tint);
+}
 
-  html {
-    scrollbar-width: none;
-  }
+::-webkit-scrollbar {
+  width: 0px;
+}
 
-  @keyframes smoothFadeInUp {
-    0% {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+html {
+  scrollbar-width: none;
+}
 
-  .animate-5 {
-    animation: smoothFadeInUp 0.4s cubic-bezier(0, -0.03, 0.5, 0.99) 0.1s both;
-  }
+:focus {
+  outline: none;
+}
 
-  .animate-7 {
-    animation: smoothFadeInUp 0.4s cubic-bezier(0, -0.03, 0.5, 0.99) 0.3s both;
-  }
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
 
-  .animate-10 {
-    animation: smoothFadeInUp 0.4s cubic-bezier(0, -0.03, 0.5, 0.99) 0.4s both;
-  }
+input[type="range"] {
+  accent-color: var(--color-accent);
+}
 
-  .animate-15 {
-    animation: smoothFadeInUp 0.4s cubic-bezier(0, -0.03, 0.5, 0.99) 0.7s both;
+input[type="checkbox"] {
+  accent-color: var(--color-accent);
+}
+
+/* Syntax colors emitted by src/lib/json.ts (highlightJSON) */
+.code-syntax [class*="9CDCFE"] {
+  color: var(--color-syntax-key);
+}
+
+.code-syntax [class*="CE9178"] {
+  color: var(--color-syntax-string);
+}
+
+.code-syntax [class*="B5CEA8"],
+.code-syntax [class*="569CD6"] {
+  color: var(--color-syntax-number);
+}
+
+.code-syntax [class*="808080"] {
+  color: var(--color-fg-tertiary);
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* One entrance on the page column — no per-card stagger */
+@utility page-enter {
+  animation: page-enter var(--duration-entrance) var(--ease-standard) both;
+}
+
+/* Press feedback for buttons, segments and cards */
+@utility pressable {
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+/* Extends a 36px control to a 44px hit area */
+@utility hit-area {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -4px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

@@ -13,6 +13,13 @@ import {
   dateToUnix,
   type TimeUnit,
 } from "@/lib/time";
+import ToolPage, { ToolHeader, CardStack } from "@/components/ToolPage";
+import Card, { AboutCard, FieldLabel } from "@/components/Card";
+import { TextField, Select } from "@/components/Field";
+import SegmentedControl from "@/components/SegmentedControl";
+import Button from "@/components/Button";
+import { Actions } from "@/components/Output";
+import { ValueRow } from "@/components/ValueRow";
 
 type CalcMode = "add" | "diff";
 
@@ -86,210 +93,143 @@ export default function DateCalculatorPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center px-6 py-16 lg:py-24">
-      <div className="w-full max-w-3xl">
-        <div className="animate-5 flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0a0a0a] border border-[#8A2BE2]">
-            <CalendarIcon className="h-5 w-5 text-[#8A2BE2]" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold">Date Calculator</h1>
-            <p className="text-sm text-neutral-500">
-              Add or subtract time, and calculate date differences
-            </p>
-          </div>
-        </div>
+    <ToolPage>
+      <ToolHeader
+        icon={CalendarIcon}
+        title="Date Calculator"
+        description="Add or subtract time, and calculate date differences"
+      />
 
-        <div className="animate-5 flex gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setMode("add")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "add"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            Add / Subtract
-          </button>
-          <button
-            onClick={() => setMode("diff")}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer border ${
-              mode === "diff"
-                ? "bg-[#0a0a0a] text-[#8A2BE2] border-[#8A2BE2]"
-                : "bg-[#0a0a0a] text-neutral-400 border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a]"
-            }`}
-          >
-            Difference
-          </button>
-        </div>
+      <CardStack>
+        <SegmentedControl
+          ariaLabel="Mode"
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "add", label: "Add / Subtract" },
+            { value: "diff", label: "Difference" },
+          ]}
+        />
 
         {mode === "add" ? (
           <>
-            <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                  Operation
-                </span>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                <div className="flex-1">
-                  <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">
-                    Base date
-                  </label>
-                  <input
+            <Card label="Operation">
+              <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
+                <div className="flex flex-1 flex-col gap-2">
+                  <FieldLabel htmlFor="calc-base">Base date</FieldLabel>
+                  <TextField
+                    id="calc-base"
                     type="datetime-local"
                     value={baseDate}
                     onChange={(e) => setBaseDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none focus:border-[#8A2BE2] transition-colors duration-200"
+                    className="scheme-dark"
                   />
                 </div>
-                <div className="w-24">
-                  <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">
-                    Amount
-                  </label>
-                  <input
+                <div className="flex flex-col gap-2 sm:w-28">
+                  <FieldLabel htmlFor="calc-amount">Amount</FieldLabel>
+                  <TextField
+                    id="calc-amount"
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none focus:border-[#8A2BE2] transition-colors duration-200"
                   />
                 </div>
-                <div>
-                  <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">
-                    Unit
-                  </label>
-                  <select
+                <div className="flex flex-col gap-2">
+                  <FieldLabel htmlFor="calc-unit">Unit</FieldLabel>
+                  <Select
+                    id="calc-unit"
                     value={unit}
                     onChange={(e) => setUnit(e.target.value as TimeUnit)}
-                    className="px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm text-[#ededed] outline-none focus:border-[#8A2BE2] transition-colors duration-200 cursor-pointer"
                   >
                     {units.map((u) => (
                       <option key={u.value} value={u.value}>
                         {u.label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               </div>
-
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={resetAdd}
-                  className="px-3 py-1.5 rounded-md text-xs bg-[#171717] text-neutral-400 border border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a] transition-all duration-200 cursor-pointer"
-                >
+              <Actions>
+                <Button onClick={resetAdd}>
                   Reset to now
-                </button>
-              </div>
-            </div>
+                </Button>
+              </Actions>
+            </Card>
 
             {addResult && (
-              <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                    Result
-                  </span>
-                </div>
-
+              <Card label="Result">
                 <div className="space-y-2">
                   <ResultRow label="Local" value={addResult.local} />
                   <ResultRow label="UTC" value={addResult.utc} />
                   <ResultRow label="ISO 8601 (UTC)" value={addResult.iso} />
                   <ResultRow label="Unix" value={addResult.unix} />
                 </div>
-              </div>
+              </Card>
             )}
           </>
         ) : (
           <>
-            <div className="animate-7 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                  Dates
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">
-                    Date A
-                  </label>
-                  <input
+            <Card label="Dates">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <FieldLabel htmlFor="calc-date-a">Date A</FieldLabel>
+                  <TextField
+                    id="calc-date-a"
                     type="datetime-local"
                     value={dateA}
                     onChange={(e) => setDateA(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none focus:border-[#8A2BE2] transition-colors duration-200"
+                    className="scheme-dark"
                   />
                 </div>
-                <div>
-                  <label className="text-[10px] text-neutral-600 uppercase tracking-wider block mb-1">
-                    Date B
-                  </label>
-                  <input
+                <div className="flex flex-col gap-2">
+                  <FieldLabel htmlFor="calc-date-b">Date B</FieldLabel>
+                  <TextField
+                    id="calc-date-b"
                     type="datetime-local"
                     value={dateB}
                     onChange={(e) => setDateB(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-black border border-[#262626] text-sm font-mono text-[#ededed] outline-none focus:border-[#8A2BE2] transition-colors duration-200"
+                    className="scheme-dark"
                   />
                 </div>
               </div>
-
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={resetDiff}
-                  className="px-3 py-1.5 rounded-md text-xs bg-[#171717] text-neutral-400 border border-[#262626] hover:text-[#ededed] hover:border-[#3a3a3a] transition-all duration-200 cursor-pointer"
-                >
+              <Actions>
+                <Button onClick={resetDiff}>
                   Reset
-                </button>
-              </div>
-            </div>
+                </Button>
+              </Actions>
+            </Card>
 
             {diffResult && (
-              <div className="animate-9 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6 mb-4">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs text-neutral-500 uppercase tracking-wider">
-                    Difference
-                  </span>
-                </div>
-
-                <p className="text-2xl font-mono font-semibold text-[#8A2BE2] mb-4">
+              <Card label="Difference">
+                <p className="font-mono text-2xl font-semibold text-accent">
                   {diffResult.diff}
                 </p>
-
                 <div className="space-y-2">
                   <ResultRow label="Total days" value={diffResult.totalDays} />
                   <ResultRow label="Unix diff" value={`${diffResult.unixDiff}s`} />
                 </div>
-              </div>
+              </Card>
             )}
           </>
         )}
 
-        <div className="animate-10 rounded-xl border border-[#262626] bg-[#0a0a0a] p-6">
-          <h2 className="text-sm font-semibold mb-3">About Date Calculator</h2>
-          <div className="space-y-3 text-sm text-neutral-400">
-            <p>
-              <strong>Add / Subtract</strong> — add or subtract any amount of
-              time from a base date. Useful for calculating deadlines, expiry
-              dates, and future events.
-            </p>
-            <p>
-              <strong>Difference</strong> — calculate the exact interval between
-              two dates, broken down into years, months, days, hours, minutes,
-              and seconds. Ideal for age calculation or time tracking.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AboutCard title="About Date Calculator">
+          <p>
+            <strong>Add / Subtract</strong> — add or subtract any amount of
+            time from a base date. Useful for calculating deadlines, expiry
+            dates, and future events.
+          </p>
+          <p>
+            <strong>Difference</strong> — calculate the exact interval between
+            two dates, broken down into years, months, days, hours, minutes,
+            and seconds. Ideal for age calculation or time tracking.
+          </p>
+        </AboutCard>
+      </CardStack>
+    </ToolPage>
   );
 }
 
 function ResultRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-[#171717] border border-[#262626]">
-      <span className="text-xs text-neutral-500">{label}</span>
-      <code className="text-sm font-mono text-[#ededed]">{value}</code>
-    </div>
-  );
+  return <ValueRow label={label} value={value} />;
 }
